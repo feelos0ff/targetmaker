@@ -1,0 +1,9 @@
+eclipse.preferences.version=1
+encoding//buildering/build.py=utf-8
+encoding//buildering/db.py=utf-8
+encoding//buildering/models.py=utf-8
+encoding//graph/orient.py=utf-8
+encoding//parsers/__init__.py=utf-8
+encoding//parsers/food.py=utf-8
+encoding//parsers/page.py=utf-8
+encoding//spiderStand/spider.py=utf-8
