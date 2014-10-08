@@ -18,19 +18,19 @@ class ReviewProductParser(object):
         pass
     
     def getUrlPersonalReviews(self, html, strId):
-        match = re.findall(r'/gp/cdp/member-reviews/.*sort_by=MostRecentReview', html)
+        match = re.findall(r'/gp/cdp/member-reviews/.*sort_by=MostRecentReview', html.text)
         if match != None:
             return match
         print "error : " + strId
         return None
     
     def getPages(self, html):
-        match = re.search(r'Previous.*Next', html)
-        if match == None:
-            print "error"
-            return []
-        prevNextStr = match.group()
-        return re.findall(r'http://www.amazon.com.*sortBy=byRankDescending', prevNextStr) 
+        pages = html.find_element_by_class_name('CMpaginate').find_elements_by_tag_name('a')
+        
+        res = { i.get_attribute('href') for i in pages }
+        
+        res.add(html.current_url)
+        return list(res)
     
 
 class ReviewPersonParser(object):
@@ -42,70 +42,70 @@ class ReviewPersonParser(object):
         pass
     
     def getPersonInfo(self, html):
-        match = re.search(r'Reviews Written by <br /> .*</b>', html)
-        line = match.group()[ len('Reviews Written by <br /> '): ]
-        if line == None:
-            return None
+        
+        line = html.find_element_by_class_name("h1").text[ len('Reviews Written by'): ]
         
         person = Persons()
         
-        author = line[: line.find(' <span class=')]
+        author = line[: line.find('(')]
         person.addAuthor(author)
         
-        nation = line[line.find('</span>') + len('</span>') : line.find('</b>')]
+        nation = line[line.find('(') : line.find(')')]
         person.location = nation.strip()
         
         return person
     
     def getPages(self, html):
-        match = re.search(r'Page:.*</div>', html)
-        if match == None:
-            print 'error'
-            return []
-        prevNextStr = match.group()
-        return re.findall(r'/gp/cdp/member-reviews.*sort_by=MostRecentReview', prevNextStr) 
+        pages = html.find_elements_by_class_name('small')[-1].find_elements_by_tag_name('a')
+        
+        res = { i.get_attribute('href') for i in pages }
+            
+        res.add(html.current_url)
+        return list(res)
     
     def getReviews(self, html):
-        headText  = r'<div class="reviewText">'
-        tailText  = r'</div>'
-        
-        headStars = r'stars" title="'
-        tailStars = r'out'
-        
-        headDate  = r'<nobr>'
-        tailDate  = r'</nobr>'
-        
-        headTitle = '<b>'
-        tailTitle = '</b>, <nobr>'
         
         res = []
         
-        text  = re.findall(headText  + r'.*' + tailText,  html)
-        stars = re.findall(headStars + r'.*' + tailStars, html)
-        title = re.findall(headTitle + r'.*' + tailTitle, html)
-        datePub = re.findall(headDate + r'.*' + tailDate, html) 
+        body = html.find_elements_by_tag_name('tbody')[1] 
+        
+        tr = body.find_elements_by_tag_name('tr')
+        tr = [ tr[i] for i in xrange(1, len(tr),3)]
+        
+        text  = [txt.text 
+                    for txt in body.find_elements_by_class_name('reviewText') ]
+        
+        title = [i.find_element_by_tag_name('b').text 
+                    for i in tr]
+        
+        stars = [re.findall(r'\d\.\d', 
+                            i.find_element_by_tag_name('img').get_attribute('title') )[0]
+                                for i in tr]
+        
+        datePub = [i.find_element_by_tag_name('nobr').text 
+                    for i in tr]
         
         for i in xrange(len(text)) :
             
             review = Reviews()
-            review.review = text[i][ len(headText) : 
-                                   ( len(text[i]) - len(tailText) ) ]
             
-            review.stars = float(stars[i][ len(headStars) : 
-                                         ( len(stars[i]) - len(tailStars) ) ])
+            review.review = text[i]
+            review.title = title[i]
             
-            review.date_review = datetime.strptime( datePub[i][ len(headDate) :
-                                                            ( len(datePub[i]) - len(tailDate))],
-                                                   '%B %d, %Y')
-            
-            review.title = title[i][ len(headTitle[i]) :
-                                   ( len(title[i]) - len(tailTitle))]
-            
+            review.stars = float(stars[i])
+            review.date_review = datetime.strptime( datePub[i], '%B %d, %Y')
+                        
             res.append(review)
+            
         return res
 
     def getUrlsGoods(self,html):
-        return re.findall(r'http://www.amazon.com/.*/dp/.*ref=cm_cr-mr-title',html)
+        body = html.find_elements_by_tag_name('tbody')[1] 
+        
+        tr = body.find_elements_by_tag_name('tr')
+        tr = [ tr[i] for i in xrange(0, len(tr),3)]
+        
+        return [i.find_element_by_tag_name('a').get_attribute('href') for i in tr] 
     
 
 class GoodsParser(object):

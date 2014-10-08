@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//buildering/__init__.py=utf-8
 encoding//buildering/build.py=utf-8
 encoding//buildering/db.py=utf-8
 encoding//buildering/models.py=utf-8
