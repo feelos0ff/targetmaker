@@ -56,6 +56,7 @@ class Goods(object):
     def addGoods(self, category):
         if len(category) != 0:
             self.category[category[0]] = Goods(category[1:])
+        return self
     
     def getGoods(self, category):
         if len(category) != 0:

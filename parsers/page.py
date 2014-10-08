@@ -5,14 +5,11 @@ Created on 30 авг. 2014 г.
 @author: feelosoff
 '''
 import re
-from buildering.models import Persons, Reviews
+from buildering.models import Persons, Reviews, Goods
 from datetime import datetime
 
 
 class ReviewProductParser(object):
-    '''
-    classdocs
-    '''
 
     def __init__(self):
         pass
@@ -34,10 +31,7 @@ class ReviewProductParser(object):
     
 
 class ReviewPersonParser(object):
-    '''
-    classdocs
-    '''
-    
+
     def __init__(self):
         pass
     
@@ -109,17 +103,50 @@ class ReviewPersonParser(object):
     
 
 class GoodsParser(object):
+    
     def __init__(self):
         pass
+    
     def getGoods(self, html):
-        headTitle = r'<span id="productTitle" class="a-size-large">'
-        tileTitle = r'</span>'
+        descriptions = html.find_elements_by_class_name('productDescriptionWrapper')
+        description = ''
         
-        headBrand = r'<a id="brand"'
-        tileBrand = r'</a>'
+        for txt in descriptions:
+            description = description + ' ' + txt
         
-        headPrice = r'<span id="priceblock_ourprice"'
-        tilePrice = r'</span>'
+        details = html.find_element_by_id('feature-bullets').find_elements_by_tag_name('li')
+        detail = ''
         
-        headDescr = r''
+        for txt in details:
+            detail = detail + ' ' + txt
+        
+        salesRank = html.find_element_by_id('SalesRank').text
+        salesRank = [[ salesRank[ salesRank.find('in') + len('in') : 
+                                  salesRank.find('(' ) ] ]]
+        
+        bestSales = html.find_elements_by_class_name('zg_hrsr_ladder')
+        
+        for line in bestSales:
+            bufferSales = []
+            line = line.find_elements_by_tag_name('a')
+        
+            for elem in line:
+                bufferSales.append(elem)
+            
+            salesRank.append(bufferSales)    
+        
+        brand = html.find_element_by_id('brand').text
+        name  = html.find_element_by_id('productTitle').text
+        
+        price = html.find_element_by_id('priceblock_ourprice').text[1:]
+        
+        goods = Goods([])
+        for category in salesRank:
+            goods.addGoods(category)
+        
+        goods.brand = brand
+        goods.description = description
+        goods.detail = detail
+        goods.name = name
+        goods.price = float(price)
         
