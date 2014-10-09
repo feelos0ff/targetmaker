@@ -55,14 +55,14 @@ def ProcessProductReview(idReviews):
     reviewProductParser = ReviewProductParser()
 
     for review in idReviews:
-        urls = reviewProductParser.getPages(reviewSpider.load( [ review] ))  # урлы отзывов продуктов
+        urls = reviewProductParser.getPages(reviewSpider.load( [ review] )[0])  # урлы отзывов продуктов
         
-        productReviewPages = rootSpider(urls)    # все страницы отзывов о продуктах
+        productReviewPages = rootSpider.load(urls)    # все страницы отзывов о продуктах
         personReviewMainPages = []
         
         for page in productReviewPages:
             urls = reviewProductParser.getUrlPersonalReviews(page, review) # урлы всех отзывов покупателей    
-            personReviewMainPages += amazonSpider.load(urls)
+            personReviewMainPages += rootSpider.load(urls)
         
      
    
@@ -78,6 +78,6 @@ if __name__ == '__main__':
    
     goods = FoodParser()
     
-    idReviews = list(goods.getGoods('/home/feelosoff/foods.txt'))    # список отзывов продуктов 
+    idReviews = ['B0024V8PSC']#list(goods.getGoods('/home/feelosoff/foods.txt'))    # список отзывов продуктов 
     
     ProcessProductReview(idReviews)    

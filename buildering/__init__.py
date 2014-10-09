@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+'''
 from selenium import webdriver
 
 driver = webdriver.PhantomJS()
@@ -21,3 +22,4 @@ for i in a:
 
 driver.quit()
 
+'''

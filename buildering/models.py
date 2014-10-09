@@ -9,7 +9,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.engine import create_engine
 
 
-engine = create_engine('postgresql+psycopg2://feelosoff:password@localhost/amazon')
+engine = create_engine('postgresql+psycopg2://postgres:password@localhost/amazon')
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))

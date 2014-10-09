@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import requests
-from requests.models import Response
 from selenium import webdriver
 '''
 Created on 29 авг. 2014 г.
@@ -28,10 +26,10 @@ class Spider(object):
             
             
             driver.get(self.placeFrom + url)
-                
-            if driver.current_url() != self.placeFrom + url:
+            print driver.current_url
+            if driver.current_url != self.placeFrom + url:
                 badCount += 1
-                continue              
+   #             continue              
             
             if self.placeTo != '':
                 fileOut = open(self.placeTo + str(self.num),'w')
