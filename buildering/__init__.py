@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+'''
 from selenium import webdriver
 
 driver = webdriver.PhantomJS()
@@ -15,3 +16,4 @@ a =driver.find_element_by_id('priceblock_ourprice').text[1:]
 print a
 driver.quit()
 
+'''
