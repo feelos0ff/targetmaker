@@ -58,7 +58,7 @@ class ReviewPersonParser(object):
         return list(res)
     
     def getReviews(self, html):
-        
+        # здесь нужен жёсткий рефакторинг
         res = []
         
         body = html.find_elements_by_tag_name('tbody')[1] 
@@ -69,15 +69,18 @@ class ReviewPersonParser(object):
         text  = [txt.text 
                     for txt in body.find_elements_by_class_name('reviewText') ]
         
-        title = [i.find_element_by_tag_name('b').text 
-                    for i in tr]
+        title = [i.find_elements_by_tag_name('b')[0].text 
+                    for i in tr  if len(i.find_elements_by_tag_name('b')) != 0 ]
+        # неправильно работает
+        stars = [re.findall(r'\d*\.\d*', 
+                            i.find_elements_by_tag_name('img')[0].get_attribute('title') )[0]
+                                for i in tr 
+                                    if len(i.find_elements_by_tag_name('img')) != 0 and 
+                                        len(i.find_elements_by_tag_name('img')[0].get_attribute('title') ) != 0]
         
-        stars = [re.findall(r'\d\.\d', 
-                            i.find_element_by_tag_name('img').get_attribute('title') )[0]
-                                for i in tr]
-        
-        datePub = [i.find_element_by_tag_name('nobr').text 
-                    for i in tr]
+        datePub = [i.find_elements_by_tag_name('nobr')[0].text 
+                    for i in tr 
+                        if len(i.find_elements_by_tag_name('nobr')) != 0]
         
         for i in xrange(len(text)) :
             
@@ -85,7 +88,7 @@ class ReviewPersonParser(object):
             
             review.review = text[i]
             review.title = title[i]
-            
+            print  (i, len(stars), len(text), text[i])
             review.stars = float(stars[i])
             review.date_review = datetime.strptime( datePub[i], '%B %d, %Y')
                         

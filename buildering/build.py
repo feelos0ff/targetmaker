@@ -8,7 +8,7 @@ Created on 30 авг. 2014 г.
 from parsers.food import FoodParser 
 
 from spiderStand.spider import Spider
-from parsers.page import ReviewProductParser, ReviewPersonParser
+from parsers.page import ReviewProductParser, ReviewPersonParser, GoodsParser
 
 from buildering.models import Persons, Goods, Reviews, engine
 from sqlalchemy.orm import sessionmaker
@@ -16,10 +16,16 @@ from db import init_db
 
 
 def ProcessGoodsPages(goodsPages):
-    pass
+    goods = []
+    goodsParser = GoodsParser()
+
+    for page in goodsPages:
+        goods.append(goodsParser.getGoods(page))
+
+    return goods
+
 
 def ProcessPersonReview(personReviewMainPages):
-    amazonSpider = Spider('http://www.amazon.com/','')
     rootSpider   = Spider('', '')
     
     reviewPersonParser  = ReviewPersonParser ()
@@ -29,27 +35,30 @@ def ProcessPersonReview(personReviewMainPages):
         urls = reviewPersonParser.getPages(page)
             
         PersonReviewPages =[] 
-        PersonReviews = []
+        reviews = []
         if len(urls) > 0:                
-            PersonReviewPages = amazonSpider.load(urls)
+            PersonReviewPages = rootSpider.load(urls)
         else:
             PersonReviewPages = [page]
            
         urls = []    
             
         for reviewPage in PersonReviewPages:
-            PersonReviews += reviewPersonParser.getReviews(reviewPage)
+            reviews += reviewPersonParser.getReviews(reviewPage)
             urls += reviewPersonParser.getUrlsGoods(reviewPage)
         
         goodsPages = rootSpider.load(urls)
         goods = ProcessGoodsPages(goodsPages)
-    
+        
+        for i in len(goods):
+            reviews[i].product_id = goods[i]
+            reviews[i].person_id  = person
+            reviews.save()
 
 
 def ProcessProductReview(idReviews):
     
     reviewSpider = Spider('http://www.amazon.com/review/', '')
-    amazonSpider = Spider('http://www.amazon.com/','')
     rootSpider   = Spider('', '')
     
     reviewProductParser = ReviewProductParser()
@@ -63,7 +72,8 @@ def ProcessProductReview(idReviews):
         for page in productReviewPages:
             urls = reviewProductParser.getUrlPersonalReviews(page, review) # урлы всех отзывов покупателей    
             personReviewMainPages += rootSpider.load(urls)
-        
+
+        ProcessPersonReview(personReviewMainPages)
      
    
 if __name__ == '__main__':
@@ -78,6 +88,6 @@ if __name__ == '__main__':
    
     goods = FoodParser()
     
-    idReviews = ['B0024V8PSC']#list(goods.getGoods('/home/feelosoff/foods.txt'))    # список отзывов продуктов 
+    idReviews = list(goods.getGoods('/home/feelosoff/foods.txt'))    # список отзывов продуктов 
     
     ProcessProductReview(idReviews)    

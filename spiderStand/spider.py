@@ -18,7 +18,7 @@ class Spider(object):
     def load(self,listUrls):
         badCount = 0
         result = []
-        
+        lastUrl = set()
         for url in listUrls:
             print url
             
@@ -27,9 +27,12 @@ class Spider(object):
             
             driver.get(self.placeFrom + url)
             print driver.current_url
-            if driver.current_url != self.placeFrom + url:
+            
+            if driver.current_url in lastUrl:
                 badCount += 1
-   #             continue              
+                continue              
+            
+            lastUrl.add(driver.current_url)
             
             if self.placeTo != '':
                 fileOut = open(self.placeTo + str(self.num),'w')

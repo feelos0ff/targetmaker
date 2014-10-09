@@ -75,8 +75,8 @@ class Reviews(object):
         self.review = ''
         self.stars = 0
         self.title = ''
-        self.date_review = date()
+        self.date_review = date(1,2,3)
         self.helpful = 0.0
         self.person_id = Persons()
-        self.good_id = Goods()
+        self.product_id = Goods()
     
