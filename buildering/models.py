@@ -7,6 +7,7 @@ Created on 11 сент. 2014 г.
 from datetime import date
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.engine import create_engine
+import json
 
 
 engine = create_engine('postgresql+psycopg2://postgres:password@localhost/amazon')
@@ -21,8 +22,8 @@ class Persons(object):
     query = db_session.query_property()
 
     def __init__(self):
-        self.nickName = ''
         self.name =''
+        self.nickName = ''
         self.location =''
         
     def addAuthor(self, author):
@@ -41,23 +42,29 @@ class Goods(object):
     '''
     query = db_session.query_property()
 
-    def __init__(self, category=[]):
+    def __init__(self):
         
-        self.category = {}
+        self.category = '{}'
         self.detail = ''
         self.name = ''
         self.price = ''
         self.description = ''
-        self.brand = ''
+        self.brand = '' 
+        self.url = ''    
+    
+    def addGoods(self, category):        
+        categoryTree = json.loads(self.category)
+        subTree = categoryTree
+        depth = len(category)
+
+        for i in xrange(depth):
+            if not subTree.has_key(category[i]):
+                subTree[category[i]] = dict()
+            subTree = subTree[category[i]]
         
-        if len(category) != 0:
-            self.category[category[0]] = self.addGood(category[1:])
-    
-    def addGoods(self, category):
-        if len(category) != 0:
-            self.category[category[0]] = Goods(category[1:])
-        return self
-    
+        self.category = json.dumps(categoryTree)
+
+
     def getGoods(self, category):
         if len(category) != 0:
             if category[0] in self.category:
@@ -77,6 +84,5 @@ class Reviews(object):
         self.title = ''
         self.date_review = date(1,2,3)
         self.helpful = 0.0
-        self.person_id = Persons()
-        self.product_id = Goods()
+
     

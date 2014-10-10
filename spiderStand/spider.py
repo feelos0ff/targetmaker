@@ -18,32 +18,33 @@ class Spider(object):
     def load(self,listUrls):
         badCount = 0
         result = []
-        lastUrl = set()
+        lastUrls = set()
         for url in listUrls:
             print url
-            
-            driver = webdriver.PhantomJS()
-            
-            
-            driver.get(self.placeFrom + url)
-            print driver.current_url
-            
-            if driver.current_url in lastUrl:
-                badCount += 1
-                continue              
-            
-            lastUrl.add(driver.current_url)
-            
-            if self.placeTo != '':
-                fileOut = open(self.placeTo + str(self.num),'w')
-                fileOut.write(driver.text.encode('utf-8'))
-                fileOut.close()
+            while True:
+                try:
+                    driver = webdriver.PhantomJS()
+                    driver.get(self.placeFrom + url)
+                except Exception as err:
+                    print 'driver exception' + str(err)
+                    continue
                 
-                self.num+=1
-                driver.quit()
+                if driver.current_url in lastUrls:
+                    badCount += 1
+                    break           
                 
-            else:
-                result += [driver]
+                lastUrls.add(driver.current_url)
+                
+                if self.placeTo != '':
+                    fileOut = open(self.placeTo + str(self.num),'w')
+                    fileOut.write(driver.text.encode('utf-8'))
+                    fileOut.close()
+                    
+                    self.num+=1
+                    driver.quit()
+                    
+                else:
+                    result += [driver]
         
         print badCount
         return result

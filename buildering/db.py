@@ -12,7 +12,7 @@ sys.path.insert(0,'/home/feelosoff/workspace/TargetMaker/')
 
 from buildering.models import Goods, Persons, Reviews, engine
 from sqlalchemy.schema import Column, Table, Sequence, MetaData
-from sqlalchemy.orm import mapper
+from sqlalchemy.orm import mapper, relation
 from sqlalchemy.types import String, Float, Integer, DateTime
 from sqlalchemy.dialects.postgresql import ARRAY
 
@@ -21,20 +21,21 @@ def init_db():
     
     persons = Table('person', metadata,
         Column('id', Integer, Sequence('person_id_seq'), primary_key=True),
-        Column('name', String(64)),
-        Column('nickName', String(64)),
-        Column('location', String(128))
+        Column('name', String()),
+        Column('nickName', String()),
+        Column('location', String())
     )
     
     
     goods = Table ('goods', metadata,
         Column('id', Integer, Sequence('good_id_seq'), primary_key=True),
-        Column('category', ARRAY(String())),
+        Column('category', String()),
         Column('detail', String()),
-        Column('name', String(128)),
+        Column('name', String()),
         Column('price',Float()),
         Column('description', String()),
-        Column('brand', String(64))    
+        Column('brand', String()),
+        Column('url', String())   
     )
     
     
@@ -50,8 +51,10 @@ def init_db():
     )
     
     
-    mapper(Persons, persons)
-    mapper(Goods, goods)
+    mapper(Persons, persons, properties={
+    'reviews': relation(Reviews, backref='person'),})
+    mapper(Goods, goods, properties={
+    'reviews': relation(Reviews, backref='product'),})
     mapper(Reviews, reviews)
     
     metadata.create_all(bind=engine)

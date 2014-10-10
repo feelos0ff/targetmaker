@@ -58,29 +58,16 @@ class ReviewPersonParser(object):
         return list(res)
     
     def getReviews(self, html):
-        # здесь нужен жёсткий рефакторинг
+
         res = []
         
-        body = html.find_elements_by_tag_name('tbody')[1] 
+        body = html.find_elements_by_tag_name('tbody')[1]         
+        text  = [txt.text for txt in body.find_elements_by_class_name('reviewText')]
+
+        datePub = [d.text for d in body.find_elements_by_tag_name('nobr')]
         
-        tr = body.find_elements_by_tag_name('tr')
-        tr = [ tr[i] for i in xrange(1, len(tr),3)]
-        
-        text  = [txt.text 
-                    for txt in body.find_elements_by_class_name('reviewText') ]
-        
-        title = [i.find_elements_by_tag_name('b')[0].text 
-                    for i in tr  if len(i.find_elements_by_tag_name('b')) != 0 ]
-        # неправильно работает
-        stars = [re.findall(r'\d*\.\d*', 
-                            i.find_elements_by_tag_name('img')[0].get_attribute('title') )[0]
-                                for i in tr 
-                                    if len(i.find_elements_by_tag_name('img')) != 0 and 
-                                        len(i.find_elements_by_tag_name('img')[0].get_attribute('title') ) != 0]
-        
-        datePub = [i.find_elements_by_tag_name('nobr')[0].text 
-                    for i in tr 
-                        if len(i.find_elements_by_tag_name('nobr')) != 0]
+        title = [ i.find_element_by_tag_name('b').text 
+                 for i in body.find_elements_by_css_selector('div[style="margin-left:0.5em;"]')]    
         
         for i in xrange(len(text)) :
             
@@ -88,8 +75,9 @@ class ReviewPersonParser(object):
             
             review.review = text[i]
             review.title = title[i]
-            print  (i, len(stars), len(text), text[i])
-            review.stars = float(stars[i])
+    
+            review.stars = 0.0
+            print datePub[i]
             review.date_review = datetime.strptime( datePub[i], '%B %d, %Y')
                         
             res.append(review)
@@ -98,11 +86,7 @@ class ReviewPersonParser(object):
 
     def getUrlsGoods(self,html):
         body = html.find_elements_by_tag_name('tbody')[1] 
-        
-        tr = body.find_elements_by_tag_name('tr')
-        tr = [ tr[i] for i in xrange(0, len(tr),3)]
-        
-        return [i.find_element_by_tag_name('a').get_attribute('href') for i in tr] 
+        return [ i.get_attribute('href') for i in body.find_elements_by_css_selector('span[class="h3color tiny"]+a') ]
     
 
 class GoodsParser(object):
@@ -115,18 +99,26 @@ class GoodsParser(object):
         description = ''
         
         for txt in descriptions:
-            description = description + ' ' + txt
+            description = description + ' ' + txt.text
         
-        details = html.find_element_by_id('feature-bullets').find_elements_by_tag_name('li')
+        details = []
+        
+        try:
+            details = html.find_element_by_id('feature-bullets').find_elements_by_tag_name('li')
+        except:
+            details = []
+        
         detail = ''
         
         for txt in details:
-            detail = detail + ' ' + txt
-        
-        salesRank = html.find_element_by_id('SalesRank').text
-        salesRank = [[ salesRank[ salesRank.find('in') + len('in') : 
-                                  salesRank.find('(' ) ] ]]
-        
+            detail = detail + ' ' + txt.text
+        try: 
+            salesRank = html.find_element_by_id('SalesRank').text
+            salesRank = [[ salesRank[ salesRank.find('in') + len('in') : 
+                                      salesRank.find('(' ) ] ]]
+        except:
+            salesRank = []
+            
         bestSales = html.find_elements_by_class_name('zg_hrsr_ladder')
         
         for line in bestSales:
@@ -134,22 +126,34 @@ class GoodsParser(object):
             line = line.find_elements_by_tag_name('a')
         
             for elem in line:
-                bufferSales.append(elem)
+                bufferSales.append(elem.text)
             
             salesRank.append(bufferSales)    
         
-        brand = html.find_element_by_id('brand').text
-        name  = html.find_element_by_id('productTitle').text
+        try:
+            brand = html.find_element_by_id('brand').text
+        except:
+            brand = 'unknown brand'
+        try:
+            name  = html.find_element_by_id('productTitle').text
+        except:
+            name  = 'unknown name'      
+        try:
+            price = html.find_element_by_id('priceblock_ourprice').text[1:]
+        except:
+            price = 0
+            
+        goods = Goods()
         
-        price = html.find_element_by_id('priceblock_ourprice').text[1:]
-        
-        goods = Goods([])
         for category in salesRank:
             goods.addGoods(category)
         
+        goods.url = html.current_url
         goods.brand = brand
         goods.description = description
         goods.detail = detail
         goods.name = name
         goods.price = float(price)
+
+        return goods
         
