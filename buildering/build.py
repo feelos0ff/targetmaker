@@ -55,6 +55,8 @@ def ProcessPersonReview(personReviewMainPages):
         for reviewPage in PersonReviewPages:
             reviews += reviewPersonParser.getReviews(reviewPage)
             urls += reviewPersonParser.getUrlsGoods(reviewPage)
+            reviewPage.quit()
+            
         print 'loads goods'  
         goodsPages = rootSpider.load(urls)
         goods = ProcessGoodsPages(goodsPages)

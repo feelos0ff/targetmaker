@@ -22,10 +22,13 @@ class ReviewProductParser(object):
         return None
     
     def getPages(self, html):
-        pages = html.find_element_by_class_name('CMpaginate').find_elements_by_tag_name('a')
-        
-        res = { i.get_attribute('href') for i in pages }
-        
+        try:
+            pages = html.find_element_by_class_name('CMpaginate').find_elements_by_tag_name('a')
+            res = { i.get_attribute('href') for i in pages }
+        except:
+            print 'paginate empty'
+            res = set()
+            
         res.add(html.current_url)
         return list(res)
     
@@ -50,9 +53,11 @@ class ReviewPersonParser(object):
         return person
     
     def getPages(self, html):
-        pages = html.find_elements_by_class_name('small')[-1].find_elements_by_tag_name('a')
-        
-        res = { i.get_attribute('href') for i in pages }
+        try:
+            pages = html.find_elements_by_class_name('small')[-1].find_elements_by_tag_name('a')
+            res = { i.get_attribute('href') for i in pages }
+        except:
+            res = set()
             
         res.add(html.current_url)
         return list(res)
@@ -139,7 +144,8 @@ class GoodsParser(object):
         except:
             name  = 'unknown name'      
         try:
-            price = html.find_element_by_id('priceblock_ourprice').text[1:]
+            price = re.match(r'\d*\.\d*',html.find_element_by_id('priceblock_ourprice').text)
+            price = float(price.group())
         except:
             price = 0
             
@@ -153,7 +159,7 @@ class GoodsParser(object):
         goods.description = description
         goods.detail = detail
         goods.name = name
-        goods.price = float(price)
+        goods.price = price
 
         return goods
         
