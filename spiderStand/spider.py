@@ -45,6 +45,7 @@ class Spider(object):
                     
                 else:
                     result += [driver]
+                break
         
         print badCount
         return result

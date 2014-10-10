@@ -4,7 +4,10 @@ Created on 30 авг. 2014 г.
 
 @author: feelosoff
 '''
-
+import sys
+sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/buildering/')
+sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/')
+    
 from parsers.food import FoodParser 
 
 from spiderStand.spider import Spider
@@ -40,7 +43,8 @@ def ProcessPersonReview(personReviewMainPages):
             
         PersonReviewPages =[] 
         reviews = []
-        if len(urls) > 0:                
+        if len(urls) > 0: 
+            print 'loads person reviews'               
             PersonReviewPages = rootSpider.load(urls)
             page.quit()
         else:
@@ -51,9 +55,10 @@ def ProcessPersonReview(personReviewMainPages):
         for reviewPage in PersonReviewPages:
             reviews += reviewPersonParser.getReviews(reviewPage)
             urls += reviewPersonParser.getUrlsGoods(reviewPage)
-        
+        print 'loads goods'  
         goodsPages = rootSpider.load(urls)
         goods = ProcessGoodsPages(goodsPages)
+        print 'set person'
         personInDB = session.query(Persons).filter(and_(Persons.name == person.name, Persons.nickName == person.nickName))
         
         if personInDB.scalar() > 0:
@@ -65,7 +70,7 @@ def ProcessPersonReview(personReviewMainPages):
         for i in xrange(len(goods)):
             reviews[i].product_id = goods[i].id
             reviews[i].person_id  = person.id
-            
+            print 'set product'
             goodsInDB = session.query(Goods).filter(Goods.url == goods[i].url)
 
             if goodsInDB.scalar() > 0:
@@ -95,10 +100,12 @@ def ProcessProductReview(idReviews):
         for page in productReviewPages:
             urls = reviewProductParser.getUrlPersonalReviews(page, review) # урлы всех отзывов покупателей    
             page.quit() 
+            print 'loads main pages' 
             ProcessPersonReview(rootSpider.load(urls))
      
    
 if __name__ == '__main__':
+    
     init_db()
    
     goods = FoodParser()
