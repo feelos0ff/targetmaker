@@ -28,10 +28,13 @@ class Persons(object):
         
     def addAuthor(self, author):
         startNick = author.find('"')
-        self.name = author[:startNick]
+        if(startNick < 0):
+            self.name = author.strip()
+        else:
+            self.name = author[:startNick].strip()
         
         if startNick > 0:
-            self.nickName = author[startNick + 1 :-1]
+            self.nickName = author[startNick + 1 :-1].strip()
         else:
             self.nickName = ''
             

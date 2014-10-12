@@ -5,12 +5,13 @@ Created on 30 авг. 2014 г.
 @author: feelosoff
 '''
 import sys
+import math
 sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/buildering/')
 sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/')
     
 from parsers.food import FoodParser 
 
-from spiderStand.spider import Spider
+from spiderStand.spider import Spider, manager
 from parsers.page import ReviewProductParser, ReviewPersonParser, GoodsParser
 
 from buildering.models import  engine, Persons, Goods
@@ -25,7 +26,7 @@ def ProcessGoodsPages(goodsPages):
 
     for page in goodsPages:
         goods.append(goodsParser.getGoods(page))
-        page.quit()
+        manager.Erase(page)#page.quit()
         
     return goods
 
@@ -44,23 +45,32 @@ def ProcessPersonReview(personReviewMainPages):
         PersonReviewPages =[] 
         reviews = []
         if len(urls) > 0: 
+            manager.Erase(page)#page.quit()
             print 'loads person reviews'               
             PersonReviewPages = rootSpider.load(urls)
-            page.quit()
+            
         else:
             PersonReviewPages = [page]
            
         urls = []    
             
         for reviewPage in PersonReviewPages:
-            reviews += reviewPersonParser.getReviews(reviewPage)
-            urls += reviewPersonParser.getUrlsGoods(reviewPage)
-            reviewPage.quit()
+            try:
+                reviews += reviewPersonParser.getReviews(reviewPage)
+                urls += reviewPersonParser.getUrlsGoods(reviewPage)
+                manager.Erase(reviewPage)
+            except:
+                manager.Erase(reviewPage)#reviewPage.quit()
+                continue
             
         print 'loads goods'  
-        goodsPages = rootSpider.load(urls)
-        goods = ProcessGoodsPages(goodsPages)
-        print 'set person'
+        goods = []
+        shift = 10
+        
+        for i in xrange(0,len(urls), shift):
+            goodsPages = rootSpider.load(urls[i: min(i + shift, len(urls))])
+            goods += ProcessGoodsPages(goodsPages)
+        
         personInDB = session.query(Persons).filter(and_(Persons.name == person.name, Persons.nickName == person.nickName))
         
         if personInDB.scalar() > 0:
@@ -72,7 +82,6 @@ def ProcessPersonReview(personReviewMainPages):
         for i in xrange(len(goods)):
             reviews[i].product_id = goods[i].id
             reviews[i].person_id  = person.id
-            print 'set product'
             goodsInDB = session.query(Goods).filter(Goods.url == goods[i].url)
 
             if goodsInDB.scalar() > 0:
@@ -93,17 +102,24 @@ def ProcessProductReview(idReviews):
     rootSpider   = Spider('', '')
     
     reviewProductParser = ReviewProductParser()
+#    точка предыдущей остановки
+    idxStart = idReviews.index('B001D07IPG')
 
-    for review in idReviews:
+    for review in idReviews[ idxStart: ]:
         urls = reviewProductParser.getPages(reviewSpider.load( [ review] )[0])  # урлы отзывов продуктов
         
         productReviewPages = rootSpider.load(urls)    # все страницы отзывов о продуктах
         
         for page in productReviewPages:
-            urls = reviewProductParser.getUrlPersonalReviews(page, review) # урлы всех отзывов покупателей    
-            page.quit() 
-            print 'loads main pages' 
-            ProcessPersonReview(rootSpider.load(urls))
+            try:
+                urls = reviewProductParser.getUrlPersonalReviews(page, review) # урлы всех отзывов покупателей    
+                manager.Erase(page)#page.quit() 
+                print 'loads main pages' 
+                ProcessPersonReview(rootSpider.load(urls))
+            except:
+                print 'goods review error parser ' + page.current_url
+                manager.Erase(page)
+                continue
      
    
 if __name__ == '__main__':
