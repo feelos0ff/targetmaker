@@ -103,7 +103,7 @@ def ProcessProductReview(idReviews):
     
     reviewProductParser = ReviewProductParser()
 #    точка предыдущей остановки
-    idxStart = idReviews.index('B001D07IPG')
+    idxStart = idReviews.index('B002GWHC0G')
 
     for review in idReviews[ idxStart: ]:
         urls = reviewProductParser.getPages(reviewSpider.load( [ review] )[0])  # урлы отзывов продуктов
@@ -111,6 +111,7 @@ def ProcessProductReview(idReviews):
         productReviewPages = rootSpider.load(urls)    # все страницы отзывов о продуктах
         
         for page in productReviewPages:
+            print page.current_url
             try:
                 urls = reviewProductParser.getUrlPersonalReviews(page, review) # урлы всех отзывов покупателей    
                 manager.Erase(page)#page.quit() 
