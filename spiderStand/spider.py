@@ -6,9 +6,29 @@ Created on 29 авг. 2014 г.
 
 @author: feelosoff
 '''
-from posix import wait
+
 from time import sleep
 
+
+class ConnectManager(object):
+    def __init__(self):
+        self.count = 0
+        self.freeDrivers = []
+        self.drivers = []
+    
+    def Erase(self, driver):
+        self.freeDrivers.append(self.drivers.index(driver))
+    
+    def GetDriver(self):
+        if self.freeDrivers == []:
+            self.drivers.append(webdriver.PhantomJS())
+            self.freeDrivers.append(self.count)
+            self.count += 1
+            
+        idx = self.freeDrivers.pop()
+        return self.drivers[idx]
+         
+manager = ConnectManager()
 
 class Spider(object):
     def __init__(self, placeFrom, placeTo):
@@ -22,10 +42,10 @@ class Spider(object):
         result = []
         lastUrls = set()
         for url in listUrls:
-            print url
+           # print url
             for i in xrange(10):
                 try:
-                    driver = webdriver.PhantomJS()
+                    driver = manager.GetDriver()#webdriver.PhantomJS()
                     driver.get(self.placeFrom + url)
                 except:
                     print 'driver exception' 
@@ -50,6 +70,6 @@ class Spider(object):
                     result += [driver]
                 break
         
-        print badCount
+      #  print badCount
         return result
     

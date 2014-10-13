@@ -40,11 +40,15 @@ class ReviewPersonParser(object):
     
     def getPersonInfo(self, html):
         
-        line = html.find_element_by_class_name("h1").text[ len('Reviews Written by'): ]
-        
+        line = html.find_element_by_class_name("h1").text[ len('Reviews Written by'): ].strip()
+        author = ''
         person = Persons()
-        
-        author = line[: line.find('(')]
+       
+        if line.find('(') > 0:
+            author = line[: line.find('(')]
+        else:
+            author = line
+            
         person.addAuthor(author)
         
         nation = line[line.find('(') : line.find(')')]
@@ -68,11 +72,12 @@ class ReviewPersonParser(object):
         
         body = html.find_elements_by_tag_name('tbody')[1]         
         text  = [txt.text for txt in body.find_elements_by_class_name('reviewText')]
-
-        datePub = [d.text for d in body.find_elements_by_tag_name('nobr')]
+        dates =  body.find_elements_by_tag_name('nobr')
+        datePub = [d.text for d in dates]
         
-        title = [ i.find_element_by_tag_name('b').text 
-                 for i in body.find_elements_by_css_selector('div[style="margin-left:0.5em;"]')]    
+        titleContainer  =  body.find_elements_by_css_selector('div[style="margin-left:0.5em;"]')
+  
+        title = [ i.find_element_by_tag_name('b').text for i in titleContainer]    
         
         for i in xrange(len(text)) :
             
@@ -82,7 +87,7 @@ class ReviewPersonParser(object):
             review.title = title[i]
     
             review.stars = 0.0
-            print datePub[i]
+          # print datePub[i]
             review.date_review = datetime.strptime( datePub[i], '%B %d, %Y')
                         
             res.append(review)
@@ -91,7 +96,8 @@ class ReviewPersonParser(object):
 
     def getUrlsGoods(self,html):
         body = html.find_elements_by_tag_name('tbody')[1] 
-        return [ i.get_attribute('href') for i in body.find_elements_by_css_selector('span[class="h3color tiny"]+a') ]
+        urlsContainer = body.find_elements_by_css_selector('span[class="h3color tiny"]+a')
+        return [ i.get_attribute('href') for i in urlsContainer ]
     
 
 class GoodsParser(object):

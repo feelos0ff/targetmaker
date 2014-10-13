@@ -5,7 +5,7 @@ Created on 30 авг. 2014 г.
 @author: feelosoff
 '''
 import sys
-import math
+
 sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/buildering/')
 sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/')
     
