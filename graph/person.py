@@ -58,20 +58,35 @@ class TwiBot(threading.Thread):
 
 
 init() # инициализируемся
+u = tweepy.models.User()
+
+users = api.search_users('delmartian')
+
+#users = api.user_timeline('@delmartian')
+
+for user in users:
+    print user.location
+    print user.screen_name
+    print user.followers_count
+    print type(user)
+    
+   # for friend in user.friends():
+   #     print friend.screen_name
+'''
 while not False: # вечно
     for word in search_reply_words: 
         TwiBot(word, search_reply_words[word]).start() #запускаем поток с нужным словом для поиска
         print strftime('[%d/%m %H:%M:%S]',localtime())+' Updating for word "'+str(word)+'"...'
         sleep(1) 
 
-'''
+
 class Twit(object):
     def __init__(self):
         self.text
         self.owner
         self.date
         
-
+      
 class TwitterUser(object):
     def __init__(self):
         self.followers

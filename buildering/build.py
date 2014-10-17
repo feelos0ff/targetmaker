@@ -129,6 +129,6 @@ if __name__ == '__main__':
    
     goods = FoodParser()
     
-    idReviews = list(goods.getGoods('/home/feelosoff/foods.txt'))    # список отзывов продуктов 
+    idReviews = list(goods.getGoods('../rsc/foods.txt'))    # список отзывов продуктов 
     
     ProcessProductReview(idReviews)    
