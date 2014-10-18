@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//buildering/__init__.py=utf-8
 encoding//buildering/build.py=utf-8
 encoding//buildering/db.py=utf-8
+encoding//buildering/initDB.py=utf-8
 encoding//buildering/models.py=utf-8
 encoding//graph/orient.py=utf-8
 encoding//parsers/__init__.py=utf-8

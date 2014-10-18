@@ -88,4 +88,24 @@ class Reviews(object):
         self.date_review = date(1,2,3)
         self.helpful = 0.0
 
+class Country(object):
+    query = db_session.query_property()
+
+    def __init__(self):
+        self.code = ''
+        self.name = ''
+
+class Region(object):
+    query = db_session.query_property()
+
+    def __init__(self):
+        self.code = ''
+        self.name = ''
+
+class City(object):
+    query = db_session.query_property()
+
+    def __init__(self):
+        self.name = ''
+    
     

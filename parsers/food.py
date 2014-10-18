@@ -19,4 +19,5 @@ class FoodParser(object):
 
             if pos != -1:
                 good.add(line[pos + len(search):].strip())
+        fileFood.close()
         return good
