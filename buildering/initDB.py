@@ -64,5 +64,4 @@ if __name__ == '__main__':
         city.region = region
 
         session.add(city)
-        session.commit()
-       
+        session.commit()  

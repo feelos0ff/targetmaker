@@ -41,8 +41,8 @@ class Spider(object):
         badCount = 0
         result = []
         lastUrls = set()
+        
         for url in listUrls:
-           # print url
             for i in xrange(10):
                 try:
                     driver = manager.GetDriver()#webdriver.PhantomJS()
@@ -69,7 +69,6 @@ class Spider(object):
                 else:
                     result += [driver]
                 break
-        
-      #  print badCount
+    
         return result
     
