@@ -10,8 +10,8 @@ from sqlalchemy import ForeignKey
 sys.path.insert(0,'/home/feelosoff/workspace/TargetMaker/buildering/')
 sys.path.insert(0,'/home/feelosoff/workspace/TargetMaker/')
 
-from buildering.models import Goods, Persons, Reviews, engine, Country, Region,\
-    City
+from buildering.models import Goods, Persons, Reviews, engine, Countries, Regions,\
+    Cities
 from sqlalchemy.schema import Column, Table, Sequence, MetaData
 from sqlalchemy.orm import mapper, relation
 from sqlalchemy.types import String, Float, Integer, DateTime
@@ -50,30 +50,34 @@ def init_db():
         Column('product_id', ForeignKey('goods.id'))
     )
     
-    country = Table('country', metadata,
-        Column(id ,Integer, Sequence('review_id_seq'), primary_key=True),
-        Column('code', String()),
-        Column('name', String())
+    city = Table('city', metadata,
+        Column('id' ,Integer, Sequence('city_id_seq'), primary_key=True),
+        Column('name', String()),
+        Column('region_id',  ForeignKey('region.id'))
     )
     
     region = Table('region', metadata,
-        Column(id ,Integer, Sequence('review_id_seq'), primary_key=True),
+        Column('id' ,Integer, Sequence('region_id_seq'), primary_key=True),
         Column('code', String()),
         Column('name', String()),
         Column('country_id',  ForeignKey('country.id'))
     ) 
     
-    city = Table('city', metadata,
-        Column(id ,Integer, Sequence('review_id_seq'), primary_key=True),
-        Column('name', String()),
-        Column('region_id',  ForeignKey('region.id'))
+    country = Table('country', metadata,
+        Column('id' ,Integer, Sequence('country_id_seq'), primary_key=True),
+        Column('code', String()),
+        Column('name', String())
     )
     
-    mapper(Country, country, properties={
-    'region': relation(region, backref='country'),})
-    mapper(Region, region, properties={
-    'city': relation(Reviews, backref='region'),})
-    mapper(City, city)
+
+    
+
+    
+    mapper(Countries, country, properties={
+    'region': relation(Regions, backref='country'),})
+    mapper(Regions, region, properties={
+    'city': relation(Cities, backref='region'),})
+    mapper(Cities, city)
     
     mapper(Persons, persons, properties={
     'reviews': relation(Reviews, backref='person'),})

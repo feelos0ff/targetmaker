@@ -10,7 +10,7 @@ from sqlalchemy.engine import create_engine
 import json
 
 
-engine = create_engine('postgresql+psycopg2://postgres:password@localhost/amazon')
+engine = create_engine('postgresql+psycopg2://postgres:password@localhost/geo')
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
@@ -88,21 +88,22 @@ class Reviews(object):
         self.date_review = date(1,2,3)
         self.helpful = 0.0
 
-class Country(object):
+
+class Countries(object):
+    query = db_session.query_property()
+    
+    def __init__(self):
+        self.code = ''
+        self.name = ''
+
+class Regions(object):
     query = db_session.query_property()
 
     def __init__(self):
         self.code = ''
         self.name = ''
 
-class Region(object):
-    query = db_session.query_property()
-
-    def __init__(self):
-        self.code = ''
-        self.name = ''
-
-class City(object):
+class Cities(object):
     query = db_session.query_property()
 
     def __init__(self):
