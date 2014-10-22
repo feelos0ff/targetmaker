@@ -6,8 +6,8 @@ Created on 30 авг. 2014 г.
 '''
 import sys
 
-sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/buildering/')
-sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/')
+sys.path.insert(0,'/home/priora/workspace/targetmaker/buildering/')
+sys.path.insert(0,'/home/priora/workspace/targetmaker/')
     
 from parsers.food import FoodParser 
 
@@ -46,7 +46,7 @@ def ProcessPersonReview(personReviewMainPages):
         reviews = []
         if len(urls) > 0: 
             manager.Erase(page)#page.quit()
-            print 'loads person reviews'               
+            print ('loads person reviews',   manager.count)               
             PersonReviewPages = rootSpider.load(urls)
             
         else:
@@ -63,7 +63,7 @@ def ProcessPersonReview(personReviewMainPages):
                 manager.Erase(reviewPage)#reviewPage.quit()
                 continue
             
-        print 'loads goods'  
+        print ('loads goods',  manager.count)
         goods = []
         shift = 10
         
@@ -103,7 +103,7 @@ def ProcessProductReview(idReviews):
     
     reviewProductParser = ReviewProductParser()
 #    точка предыдущей остановки
-    idxStart = idReviews.index('B003XDM3EC')
+    idxStart = idReviews.index('B006K2ZZ7K')
     print (idxStart, len(idReviews))
     for review in idReviews[ idxStart: ]:
         urls = reviewProductParser.getPages(reviewSpider.load( [ review] )[0])  # урлы отзывов продуктов

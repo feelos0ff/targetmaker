@@ -8,6 +8,7 @@ from datetime import date
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.engine import create_engine
 import json
+from sqlalchemy.sql.expression import and_
 
 
 engine = create_engine('postgresql+psycopg2://postgres:password@localhost/geo')
@@ -37,8 +38,7 @@ class Persons(object):
             self.nickName = author[startNick + 1 :-1].strip()
         else:
             self.nickName = ''
-            
-
+   
 class Goods(object):    
     '''
     хранит информацию о товарах
@@ -95,6 +95,20 @@ class Countries(object):
     def __init__(self):
         self.code = ''
         self.name = ''
+        
+    def checkLoc(self, session, line, location):
+        try:
+            self = session.query(Countries).get_by(name=line)
+            return True
+        except:
+            pass
+        try:
+            self = session.query(Countries).get_by(code=line)
+            return True
+        except:
+            pass
+        
+        return False
 
 class Regions(object):
     query = db_session.query_property()
@@ -103,10 +117,58 @@ class Regions(object):
         self.code = ''
         self.name = ''
 
+    def checkLoc(self, session, line, location):
+        try:
+            if location[0].code != '': 
+                self = session.query(Regions).get_by(and_(Regions.name==line, Countries.code==location[0].code))
+                print session.query(Regions).get_by(and_(Regions.name==line, Countries.code==location[0].code))
+            else :
+                self = session.query(Regions).filter_by(name=line).first()
+            
+            return True
+        
+        except:
+            pass
+        try:
+            if location[0].code != '':
+                self = session.query(Regions).get_by(and_(Regions.code==line, Countries.code==location[0].code))
+                print session.query(Regions).get_by(and_(Regions.code==line, Countries.code==location[0].code))
+            else :
+                self = session.query(Regions).filter_by(code=line).first()
+            
+            return True
+        except:
+            pass
+        
+        return False
+
 class Cities(object):
     query = db_session.query_property()
 
     def __init__(self):
         self.name = ''
     
-    
+    def checkLoc(self, session, line, location):
+        try:
+            if location[1].name != '': 
+                self = session.query(Regions).get_by(and_(Regions.name==line, Countries.code==location[0].code))
+                print session.query(Regions).get_by(and_(Regions.name==line, Countries.code==location[0].code))
+            else :
+                self = session.query(Regions).filter_by(name=line).first()
+            
+            return True
+        
+        except:
+            pass
+        try:
+            if location[0].code != '':
+                self = session.query(Regions).get_by(and_(Regions.code==line, Countries.code==location[0].code))
+                print session.query(Regions).get_by(and_(Regions.code==line, Countries.code==location[0].code))
+            else :
+                self = session.query(Regions).filter_by(code=line).first()
+            
+            return True
+        except:
+            pass
+        
+        return False

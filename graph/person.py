@@ -5,7 +5,7 @@ Created on 18 авг. 2014 г.
 @author: feelosoff
 '''
 
-import oauth, tweepy, sys, locale, threading 
+import tweepy, sys, locale, threading 
 from time import localtime, strftime, sleep
 from tweepy.models import Status
 
@@ -60,15 +60,13 @@ class TwiBot(threading.Thread):
 init() # инициализируемся
 u = tweepy.models.User()
 
-users = api.search_users('delmartian')
+users = api.search_users('G. Little')
 
 #users = api.user_timeline('@delmartian')
 
 for user in users:
-    print user.location
-    print user.screen_name
-    print user.followers_count
-    print type(user)
+    print user.location, user.screen_name
+
     
    # for friend in user.friends():
    #     print friend.screen_name

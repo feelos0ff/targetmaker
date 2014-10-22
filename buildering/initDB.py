@@ -52,9 +52,9 @@ if __name__ == '__main__':
             session.add(etc)
     
         regionInDB = session.query(Regions).filter(and_(Regions.code == region.code, 
-                                                                   Regions.name == region.name, 
-                                                                   Countries.code == country.code,
-                                                                   Countries.name == country.name))
+                                                        Regions.name == region.name, 
+                                                        Countries.code == country.code,
+                                                        Countries.name == country.name))
         if regionInDB.count() > 0 :           
             region = regionInDB[0]
         else:
