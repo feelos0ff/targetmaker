@@ -26,6 +26,7 @@ class Persons(object):
         self.name =''
         self.nickName = ''
         self.location =''
+        self.twitterAccount = ''
         
     def addAuthor(self, author):
         startNick = author.find('"')

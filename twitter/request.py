@@ -5,14 +5,13 @@ Created on 18 окт. 2014 г.
 @author: feelosoff
 '''
 
-from buildering.models import Persons, Cities, Regions, Countries
+from buildering.models import Persons
+from parsers.location import LocationParser
 
-class Twitter(object):
+class TwitterSearcher(object):
     '''
     classdocs
     '''
-
-
     def __init__(self, params):
         pass
     

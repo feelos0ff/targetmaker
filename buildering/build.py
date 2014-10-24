@@ -5,6 +5,7 @@ Created on 30 авг. 2014 г.
 @author: feelosoff
 '''
 import sys
+from twitter.request import TwitterSearcher
 
 sys.path.insert(0,'/home/priora/workspace/targetmaker/buildering/')
 sys.path.insert(0,'/home/priora/workspace/targetmaker/')
@@ -34,12 +35,16 @@ def ProcessGoodsPages(goodsPages):
 def ProcessPersonReview(personReviewMainPages):
     rootSpider   = Spider('', '')
     Session = sessionmaker(bind=engine)
-
+    searcher = TwitterSearcher()
     session = Session()
     reviewPersonParser  = ReviewPersonParser ()
     
     for page in personReviewMainPages:
         person = reviewPersonParser.getPersonInfo(page)
+        
+        if not searcher.getSameUser(person):
+            continue
+        
         urls = reviewPersonParser.getPages(page)
             
         PersonReviewPages =[] 

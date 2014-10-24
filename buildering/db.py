@@ -23,7 +23,8 @@ def init_db():
         Column('id', Integer, Sequence('person_id_seq'), primary_key=True),
         Column('name', String()),
         Column('nickName', String()),
-        Column('location', String())
+        Column('location', String()),
+        Column('twitterAccount', String())
     )
     
     

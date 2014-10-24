@@ -4,68 +4,41 @@ Created on 22 окт. 2014 г.
 
 @author: priora
 '''
-from buildering.models import Countries, Regions, Cities, engine
-from sqlalchemy.orm import sessionmaker
-from elasticsearch.client import Elasticsearch
+
 from pyes.es import ES
-from pyes.query import TermsQuery, TermQuery, Search, WildcardQuery
-
-
+from pyes.query import QueryStringQuery
+import re
 
 class LocationParser(object):
     '''
     classdocs
     '''
 
-    def __init__(self, params):
-        pass
-    
+    def __init__(self):
+        self.exceptionTable = {'usa': 'United States', 'us':'United States'}
+        self.es = ES('127.0.0.1:9200')
+
     def parse(self, address):
         
-        Session = sessionmaker(bind=engine)
-        session = Session() 
+        address = address.lower()
         
-        parts = [ line.split(' ') for line in address.split(',')].reverse()
-        location = [Countries(), Regions(), Cities()]
+        for key, val in self.exceptionTable.items():
+            address = re.sub(r'\W'+key+'\W',val,address)
         
-        for levelLoc in location:
-            for part in parts:
-                partLen = len(part)
-                
-                for windowLen in xrange(partLen, 0, -1):
-                    
-                    for windowPos in xrange(partLen -windowLen, -1, -1):
-                        forCheck = ''
-                        for wordNum in xrange(windowLen):
-                            forCheck = forCheck + part[wordNum + windowPos]
-                            
-                        if(levelLoc.checkLoc(session, forCheck, location)):
-                            break
-                    else:
-                        continue
-                    break
-            else:
-                if isinstance(levelLoc,Regions):
-                    levelLoc.checkLoc(session, '', location)
-                continue
-            break
+        res = QueryStringQuery(address)
+        res = self.es.search(query =res,indices ="geo-index")
         
-
-def toElastic():
-    es = Elasticsearch()
-    rsc = open('../rsc/locations.csv')
-    i = 0
-    for line in rsc:
-        res = es.index(index="test-index", doc_type='tweet', id=i,body={'geo':line})
-        i += 1
-        print(res['created'])
+        return res[0]
         
-es = ES('127.0.0.1:9200')
-
-res = TermQuery('country_code', 'us')
-res = es.search(query =res,indices ="geo-index")
-#res  = es.get("geo-index", "geo", 2)
-print res.total
-for x in res:
-    print x
+    def distanse(self,addr1, addr2):
+        if addr1['country_code'] != addr2['country_code']:
+            return 3
+        
+        if len(addr1) == 1 or len(addr2) == 1 or addr1['region_code'] != addr2['region_code']:
+            return 2
+        
+        if len(addr1) > 2 and len(addr2) > 2 and addr1['city_name'] != addr2['city_name']:
+            return 1
+        
+        return 0
         
