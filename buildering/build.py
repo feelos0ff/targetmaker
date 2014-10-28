@@ -108,7 +108,7 @@ def ProcessProductReview(idReviews):
     
     reviewProductParser = ReviewProductParser()
 #    точка предыдущей остановки
-    idxStart = idReviews.index('B006K2ZZ7K')
+    idxStart =0# idReviews.index('B006K2ZZ7K')
     print (idxStart, len(idReviews))
     for review in idReviews[ idxStart: ]:
         urls = reviewProductParser.getPages(reviewSpider.load( [ review] )[0])  # урлы отзывов продуктов

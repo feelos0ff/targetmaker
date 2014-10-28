@@ -60,12 +60,13 @@ class TwiBot(threading.Thread):
 init() # инициализируемся
 u = tweepy.models.User()
 
-users = api.search_users('G. Little')
+users = api.search_users('Natalia Corres')[:5]
 
-#users = api.user_timeline('@delmartian')
+
+ #users = api.user_timeline('@delmartian')
 
 for user in users:
-    print user.location, user.screen_name
+    print user.location, user.screen_name, user.description
 
     
    # for friend in user.friends():

@@ -41,4 +41,5 @@ class LocationParser(object):
             return 1
         
         return 0
+    
         

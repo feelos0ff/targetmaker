@@ -86,34 +86,6 @@ if __name__ == '__main__':
                         'region_code' : region.code, 'region_name' : region.name, 'city_name':line[6]},"geo-index", "geo", num)
         
         print res
-        '''
-        countryInDB = session.query(Countries).filter(and_(Countries.code == country.code, 
-                                                           Countries.name == country.name))
-         
-        if countryInDB.count() > 0 :
-                       
-            country = countryInDB[0]
-        else:
-            session.add(country)
-            etc = Regions()
-            etc.code = country.code
-            etc.country = country
-            session.add(etc)
-    
-        regionInDB = session.query(Regions).filter(and_(Regions.code == region.code, 
-                                                        Regions.name == region.name, 
-                                                        Countries.code == country.code,
-                                                        Countries.name == country.name))
-        if regionInDB.count() > 0 :           
-            region = regionInDB[0]
-        else:
-            region.country = country
-            session.add(region)
-
-        city.region = region
-
-        session.add(city)
-        session.commit()  
-        '''
+  
     es.indices.refresh()
     geo.close()
