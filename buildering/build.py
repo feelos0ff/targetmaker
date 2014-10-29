@@ -38,13 +38,15 @@ def ProcessPersonReview(personReviewMainPages):
     searcher = TwitterSearcher()
     session = Session()
     reviewPersonParser  = ReviewPersonParser ()
-    
+
     for page in personReviewMainPages:
         person = reviewPersonParser.getPersonInfo(page)
-        
-        if not searcher.getSameUser(person):
+        try:
+            if not searcher.getSameUser(person):
+                continue
+        except Exception as e:
+            print ' error of twitter ', e
             continue
-        
         urls = reviewPersonParser.getPages(page)
             
         PersonReviewPages =[] 
@@ -122,8 +124,8 @@ def ProcessProductReview(idReviews):
                 manager.Erase(page)#page.quit() 
                 print 'loads main pages' 
                 ProcessPersonReview(rootSpider.load(urls))
-            except:
-                print 'goods review error parser ' + page.current_url
+            except Exception as e:
+                print ' goods review error parser ' + page.current_url , e
                 manager.Erase(page)
                 continue
      

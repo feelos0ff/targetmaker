@@ -11,7 +11,7 @@ import json
 from sqlalchemy.sql.expression import and_
 
 
-engine = create_engine('postgresql+psycopg2://postgres:password@localhost/geo')
+engine = create_engine('postgresql+psycopg2://postgres:password@localhost/tweezon')
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))

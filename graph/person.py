@@ -66,7 +66,8 @@ users = api.search_users('Natalia Corres')[:5]
  #users = api.user_timeline('@delmartian')
 
 for user in users:
-    print user.location, user.screen_name, user.description
+    print user.name, user.screen_name
+    break
 
     
    # for friend in user.friends():
