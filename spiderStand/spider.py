@@ -23,22 +23,24 @@ class ConnectManager(object):
                        # "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/53 (KHTML, like Gecko) Chrome/15.0.87",
                         #"Mozilla/5.0 (X11; Linux x86_64; U; ru; rv:1.8.1) Gecko/20061208 Firefox/2.0.0 Opera 10.10",
                         #"Mozilla/4.0 (compatible; MSIE 6.0; X11; Linux x86_64; ru) Opera 10.10",
-                       ## "Mozilla/5.0 (X11; Linux x86_64; U; ru; rv:1.8.1) Gecko/20061208 Firefox/2.0.0",
+                       # "Mozilla/5.0 (X11; Linux x86_64; rv:31.0) Gecko/20100101 Firefox/31.0",
+                       # "Mozilla/5.0 (X11; Linux x86_64; U; ru; rv:1.8.1) Gecko/20061208 Firefox/2.0.0",
+                        
                         #"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; ru)",
                        # "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36",
-                        "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+                        #"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
                         ]
-        #fileAgents = open("../rsc/userAgents.txt")
+        fileAgents = open("../rsc/userAgentsAll.txt")
 
-       # for agent in fileAgents:
-         #   self.headers.append(agent)
+        for agent in fileAgents:
+            self.headers.append(agent)
     
     def Erase(self, driver):
         self.freeDrivers.append(self.drivers.index(driver))
     
     def CreateDriver(self):
         dcap = dict(DesiredCapabilities.PHANTOMJS)
-        dcap["phantomjs.page.settings.userAgent"] = self.headers[0]# randint(0,len(self.headers)-1) ]
+        dcap["phantomjs.page.settings.userAgent"] = self.headers[ randint(0,len(self.headers)-1) ]
         
         driver = webdriver.PhantomJS(desired_capabilities=dcap)
         driver.set_page_load_timeout(30)
@@ -60,10 +62,10 @@ class ConnectManager(object):
     def RestartDriver(self, driver):
         num = self.drivers.index(driver)            
 
-        self.driver[num].quit()
-        self.driver[num] = self.CreateDriver()
+        self.drivers[num].quit()
+        self.drivers[num] = self.CreateDriver()
         
-        return self.driver[num]
+        return self.drivers[num]
         
 manager = ConnectManager()
 
@@ -97,6 +99,7 @@ class Spider(object):
                     sleep(1)
                     continue
                 
+                print driver.current_url
                 if driver.current_url in lastUrls:
                     badCount += 1
                     break           
@@ -112,10 +115,6 @@ class Spider(object):
                     driver.quit()
                     
                 else:
-                    self.num+=1
-                    fileOut = open(self.placeTo + str(self.num),'w')
-                    fileOut.write(driver.page_source.encode('utf-8'))
-                    fileOut.close()
                     
                     result += [driver]
                 break

@@ -85,8 +85,12 @@ class TwitterSearcher(object):
     
         rankedUsers.sort(key= lambda el: 3* el[1] + 2 * el[2] + el[3])
         for usr in rankedUsers:
-            if len(usr[0].followers()) < 5:
-                continue
+            try:
+                if len(usr[0].followers()) < 5:
+                    continue
+            except:
+                return usr[0].screen_name
+            
             if usr[2] < 0.3 and usr[0][3] < 0.2 and usr[1] < 0.5:
                 return None
           

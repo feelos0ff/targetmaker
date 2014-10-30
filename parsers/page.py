@@ -15,7 +15,7 @@ class ReviewProductParser(object):
         pass
     
     def getUrlPersonalReviews(self, html, strId):
-        match = re.findall(r'/gp/cdp/member-reviews/.*/', html.page_source)
+        match = re.findall(r'/gp/cdp/member-reviews/\w*/', html.page_source)
         if match != None:
             return ['http://www.amazon.com' + url + 'ref=cm_cr_pr_auth_rev?ie=UTF8&sort_by=MostRecentReview' for url in match ]
         print "error : " + strId

@@ -19,19 +19,21 @@ class LocationParser(object):
         self.es = ES('127.0.0.1:9200')
 
     def parse(self, address):
-        try:
-            address = address.lower()
+        address = address.strip()
+        if address != '':
+            try:
+                address = address.lower()
+                
+                for key, val in self.exceptionTable.items():
+                    address = re.sub(r'\W'+key+'\W',val,address)
+                
+                res = QueryStringQuery(address)
+                res = self.es.search(query =res,indices ="geo-index")
+                
+                return res[0]
+            except:
+                print 'location err ' + address
             
-            for key, val in self.exceptionTable.items():
-                address = re.sub(r'\W'+key+'\W',val,address)
-            
-            res = QueryStringQuery(address)
-            res = self.es.search(query =res,indices ="geo-index")
-            
-            return res[0]
-        except:
-            print "error location " +address
-        
         return {'country_code' : '', 'region_code' :'', 'city_name' :''}
         
     def distance(self,addr1, addr2):
