@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+'''
 import Levenshtein
 print Levenshtein.jaro('cat','cetss')
 print Levenshtein.jaro('cat','cets')
 print Levenshtein.jaro('cat','cet')
 print Levenshtein.jaro('cat','cats')
 print Levenshtein.jaro('cat','ctss')
-'''
+
 from nltk.corpus import stopwords
 import nltk
 

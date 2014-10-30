@@ -15,9 +15,9 @@ class ReviewProductParser(object):
         pass
     
     def getUrlPersonalReviews(self, html, strId):
-        match = re.findall(r'/gp/cdp/member-reviews/.*sort_by=MostRecentReview', html.page_source)
+        match = re.findall(r'/gp/cdp/member-reviews/.*/', html.page_source)
         if match != None:
-            return ['http://www.amazon.com' + url for url in match ]
+            return ['http://www.amazon.com' + url + 'ref=cm_cr_pr_auth_rev?ie=UTF8&sort_by=MostRecentReview' for url in match ]
         print "error : " + strId
         return None
     
@@ -43,15 +43,17 @@ class ReviewPersonParser(object):
         line = html.find_element_by_class_name("h1").text[ len('Reviews Written by'): ].strip()
         author = ''
         person = Persons()
-       
+        nation = ''
+ 
         if line.find('(') > 0:
             author = line[: line.find('(')]
+            nation = line[line.find('(')+1 : line.find(')')]
         else:
             author = line
             
         person.addAuthor(author)
         
-        nation = line[line.find('(') : line.find(')')]
+        
         person.location = nation.strip()
         
         return person

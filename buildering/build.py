@@ -38,12 +38,15 @@ def ProcessPersonReview(personReviewMainPages):
     searcher = TwitterSearcher()
     session = Session()
     reviewPersonParser  = ReviewPersonParser ()
-
+    
     for page in personReviewMainPages:
         person = reviewPersonParser.getPersonInfo(page)
         try:
-            if not searcher.getSameUser(person):
+            twittAcc = searcher.getSameUser(person)
+            if not twittAcc:
+                print person
                 continue
+            person.twitterAccount = twittAcc
         except Exception as e:
             print ' error of twitter ', e
             continue
@@ -113,12 +116,15 @@ def ProcessProductReview(idReviews):
     idxStart =0# idReviews.index('B006K2ZZ7K')
     print (idxStart, len(idReviews))
     for review in idReviews[ idxStart: ]:
-        urls = reviewProductParser.getPages(reviewSpider.load( [ review] )[0])  # урлы отзывов продуктов
+        print 'num in file',idReviews.index(review)
+        try:
+            urls = reviewProductParser.getPages(reviewSpider.load( [ review] )[0])  # урлы отзывов продуктов
         
-        productReviewPages = rootSpider.load(urls)    # все страницы отзывов о продуктах
-        
+            productReviewPages = rootSpider.load(urls)    # все страницы отзывов о продуктах
+        except Exception as e:
+            print 'product error ', e
         for page in productReviewPages:
-            print page.current_url
+            
             try:
                 urls = reviewProductParser.getUrlPersonalReviews(page, review) # урлы всех отзывов покупателей    
                 manager.Erase(page)#page.quit() 

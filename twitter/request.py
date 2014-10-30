@@ -5,7 +5,7 @@ Created on 18 окт. 2014 г.
 @author: feelosoff
 '''
 import tweepy
-from Levenshtein import jaro_winkler
+from Levenshtein import jaro, jaro_winkler
 from buildering.models import Persons
 from parsers.location import LocationParser
 from pyes.es import ES
@@ -73,18 +73,23 @@ class TwitterSearcher(object):
         rankedUsers = []
         
         for i in xrange(count):
-            distanceName =  max( jaro_winkler(person.name, users[i].screen_name), jaro_winkler(person.name, users[i].name) ) * (count - i) / count
+            distanceName =  max( jaro(person.name.lower(), users[i].screen_name.lower()), 
+                                 jaro(person.name.lower(), users[i].name.lower()) ) * (count - i) / count
             distanceDescription = self.countDistance(person, users[i])
             
             tweeAddr = self.locParse.parse(users[i].location)
             amazonAddr = self.locParse.parse(person.location)
             distanceLocation =  (3 -self.locParse.distance(amazonAddr,tweeAddr) ) / 3.0
-            print distanceName, distanceDescription,distanceLocation
-            rankedUsers.append([users.screen_name, distanceName, distanceLocation, distanceDescription])
+
+            rankedUsers.append([users[i], distanceName, distanceLocation, distanceDescription])
     
         rankedUsers.sort(key= lambda el: 3* el[1] + 2 * el[2] + el[3])
-        
-        if rankedUsers[0][2] < 0.5 and rankedUsers[0][3] < 0.2 and rankedUsers[0][1] < 0.5:
-            return None
+        for usr in rankedUsers:
+            if len(usr[0].followers()) < 5:
+                continue
+            if usr[2] < 0.3 and usr[0][3] < 0.2 and usr[1] < 0.5:
+                return None
           
-        return rankedUsers[0][0]
+            return usr[0].screen_name
+
+        return None

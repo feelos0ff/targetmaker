@@ -63,10 +63,14 @@ u = tweepy.models.User()
 users = api.search_users('Natalia Corres')[:5]
 
 
+
  #users = api.user_timeline('@delmartian')
 
 for user in users:
-    print user.name, user.screen_name
+    print user.screen_name
+    for i in user.followers():
+        print i.screen_name
+#    print user.followings()
     break
 
     

@@ -36,9 +36,14 @@ class Persons(object):
             self.name = author[:startNick].strip()
         
         if startNick > 0:
-            self.nickName = author[startNick + 1 :-1].strip()
+            
+            self.nickName = author[startNick + 1 :].strip()
+            stopNick = self.nickName.find('"')
+            self.nickName = author[:stopNick].strip()
         else:
             self.nickName = ''
+    def __unicode__(self):
+        return  self.name + ' '  + self.nickName + ' ' +  self.location  + ' ' +  self.twitterAccount 
    
 class Goods(object):    
     '''
