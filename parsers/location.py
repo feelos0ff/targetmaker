@@ -15,11 +15,11 @@ class LocationParser(object):
     '''
 
     def __init__(self):
-        self.exceptionTable = {'usa': 'United States', 'us':'United States'}
+        self.exceptionTable = {'usa': 'United States', 'us':'United States', 'nyc':'Ney York', 'uk':'United Kingdom'}
         self.es = ES('127.0.0.1:9200')
 
     def parse(self, address):
-        address = address.strip()
+        address = address.encode('utf-8').strip()
         if address != '':
             try:
                 address = address.lower()
@@ -38,6 +38,9 @@ class LocationParser(object):
         
     def distance(self,addr1, addr2):
         
+        if  addr1 == {'country_code' : '', 'region_code' :'', 'city_name' :''} or addr2 == {'country_code' : '', 'region_code' :'', 'city_name' :''}:
+            return 3
+        
         if addr1['country_code'] != addr2['country_code']:
             return 3
         
@@ -47,5 +50,11 @@ class LocationParser(object):
         if len(addr1) > 2 and len(addr2) > 2 and addr1['city_name'] != addr2['city_name']:
             return 1
         return 0
-    
-        
+
+'''
+es = ES('127.0.0.1:9200')
+res = TermQuery('country_code','gb')
+res = es.search(query =res,indices ="geo-index")
+for i in res:
+    print  i
+'''

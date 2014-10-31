@@ -10,4 +10,5 @@ encoding//parsers/food.py=utf-8
 encoding//parsers/location.py=utf-8
 encoding//parsers/page.py=utf-8
 encoding//spiderStand/spider.py=utf-8
+encoding//twitter/oAuth.py=utf-8
 encoding//twitter/request.py=utf-8

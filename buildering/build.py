@@ -5,11 +5,12 @@ Created on 30 авг. 2014 г.
 @author: feelosoff
 '''
 import sys
+sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/buildering/')
+sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/')
+    
+
 from twitter.request import TwitterSearcher
 
-sys.path.insert(0,'/home/priora/workspace/targetmaker/buildering/')
-sys.path.insert(0,'/home/priora/workspace/targetmaker/')
-    
 from parsers.food import FoodParser 
 
 from spiderStand.spider import Spider, manager
@@ -44,11 +45,12 @@ def ProcessPersonReview(personReviewMainPages):
         try:
             twittAcc = searcher.getSameUser(person)
             if not twittAcc:
-                print person
+                manager.Erase(page)
                 continue
             person.twitterAccount = twittAcc
         except Exception as e:
             print ' error of twitter ', e
+            manager.Erase(page)
             continue
         urls = reviewPersonParser.getPages(page)
             

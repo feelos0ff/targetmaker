@@ -39,7 +39,7 @@ class Persons(object):
             
             self.nickName = author[startNick + 1 :].strip()
             stopNick = self.nickName.find('"')
-            self.nickName = author[:stopNick].strip()
+            self.nickName = self.nickName[:stopNick].strip()
         else:
             self.nickName = ''
     def __unicode__(self):

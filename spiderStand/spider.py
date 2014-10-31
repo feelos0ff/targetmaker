@@ -30,7 +30,7 @@ class ConnectManager(object):
                        # "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36",
                         #"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
                         ]
-        fileAgents = open("../rsc/userAgentsAll.txt")
+        fileAgents = open("/home/feelosoff/workspace/targetmaker/rsc/userAgents.txt")
 
         for agent in fileAgents:
             self.headers.append(agent)
@@ -41,8 +41,8 @@ class ConnectManager(object):
     def CreateDriver(self):
         dcap = dict(DesiredCapabilities.PHANTOMJS)
         dcap["phantomjs.page.settings.userAgent"] = self.headers[ randint(0,len(self.headers)-1) ]
-        
-        driver = webdriver.PhantomJS(desired_capabilities=dcap)
+       # print dcap["phantomjs.page.settings.userAgent"]
+        driver = webdriver.PhantomJS()#desired_capabilities=dcap)
         driver.set_page_load_timeout(30)
         driver.set_script_timeout(30)
         
@@ -54,6 +54,7 @@ class ConnectManager(object):
             self.drivers.append(self.CreateDriver())
             
             self.count += 1
+            
             return self.drivers[-1]
             
         idx = self.freeDrivers.pop()
@@ -92,6 +93,7 @@ class Spider(object):
                 
                 try:
                     driver.get(self.placeFrom + url)
+                    print len(driver.page_source)
                 except:
                     print 'driver exception' 
                     
@@ -115,7 +117,12 @@ class Spider(object):
                     driver.quit()
                     
                 else:
-                    
+                    '''
+                    fileOut = open(self.placeTo + str(self.num),'w')
+                    fileOut.write(driver.page_source.encode('utf-8'))
+                    fileOut.close()
+                    self.num+=1
+                    '''
                     result += [driver]
                 break
     

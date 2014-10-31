@@ -60,18 +60,14 @@ class TwiBot(threading.Thread):
 init() # инициализируемся
 u = tweepy.models.User()
 
-users = api.search_users('Natalia Corres')[:5]
+users = api.search_users('Natalia Corres')
 
 
 
  #users = api.user_timeline('@delmartian')
 
 for user in users:
-    print user.screen_name
-    for i in user.followers():
-        print i.screen_name
-#    print user.followings()
-    break
+    print user.screen_name, user.location, user.description
 
     
    # for friend in user.friends():

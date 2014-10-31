@@ -15,9 +15,11 @@ class ReviewProductParser(object):
         pass
     
     def getUrlPersonalReviews(self, html, strId):
-        match = re.findall(r'/gp/cdp/member-reviews/\w*/', html.page_source)
+        match = re.findall(r'/gp/pdp/profile/\w*', html.page_source.encode('utf-8'))#'/gp/cdp/member-reviews/\w*/', html.page_source)
+        match = [addr.replace(r'/gp/pdp/profile/', r'/gp/cdp/member-reviews/') for addr in match]
+        
         if match != None:
-            return ['http://www.amazon.com' + url + 'ref=cm_cr_pr_auth_rev?ie=UTF8&sort_by=MostRecentReview' for url in match ]
+            return ['http://www.amazon.com' + url + '?ie=UTF8&amp;sort_by=MostRecentReview' for url in match ]
         print "error : " + strId
         return None
     
