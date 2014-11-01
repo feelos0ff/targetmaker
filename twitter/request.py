@@ -108,7 +108,7 @@ class TwitterSearcher(object):
        
         for usr in rankedUsers:
             badUsr = False
-            print usr[1:], usr[0].screen_name, usr[0].description
+         #   print usr[1:], usr[0].screen_name, usr[0].description
             
             while True:
                 try:

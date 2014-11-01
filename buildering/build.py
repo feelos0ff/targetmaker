@@ -5,6 +5,8 @@ Created on 30 авг. 2014 г.
 @author: feelosoff
 '''
 import sys
+from datetime import datetime
+
 sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/buildering/')
 sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/')
     
@@ -27,9 +29,12 @@ def ProcessGoodsPages(goodsPages):
     goodsParser = GoodsParser()
 
     for page in goodsPages:
-        goods.append(goodsParser.getGoods(page))
-        manager.Erase(page)#page.quit()
-        
+        try:
+            goods.append(goodsParser.getGoods(page))
+        except Exception as e:
+            print 'goods parser ', e
+        manager.Erase(page)
+            
     return goods
 
 
@@ -41,7 +46,13 @@ def ProcessPersonReview(personReviewMainPages):
     reviewPersonParser  = ReviewPersonParser ()
     
     for page in personReviewMainPages:
-        person = reviewPersonParser.getPersonInfo(page)
+        try:
+            person = reviewPersonParser.getPersonInfo(page)
+            urls = reviewPersonParser.getPages(page)
+        except Exception as e:
+            print 'person info err ', e
+            manager.Erase(page)
+            continue
         try:
             twittAcc = searcher.getSameUser(person)
             if not twittAcc:
@@ -52,15 +63,15 @@ def ProcessPersonReview(personReviewMainPages):
             print ' error of twitter ', e
             manager.Erase(page)
             continue
-        urls = reviewPersonParser.getPages(page)
+        
             
         PersonReviewPages =[] 
         reviews = []
+        
         if len(urls) > 0: 
             manager.Erase(page)#page.quit()
             print ('loads person reviews',   manager.count)               
             PersonReviewPages = rootSpider.load(urls)
-            
         else:
             PersonReviewPages = [page]
            
@@ -115,10 +126,12 @@ def ProcessProductReview(idReviews):
     
     reviewProductParser = ReviewProductParser()
 #    точка предыдущей остановки
-    idxStart =0# idReviews.index('B006K2ZZ7K')
+    idxStart =75# idReviews.index('B006K2ZZ7K')
+    
     print (idxStart, len(idReviews))
     for review in idReviews[ idxStart: ]:
-        print 'num in file',idReviews.index(review)
+        print 'num in file',idReviews.index(review), datetime.now()
+        manager.EraseAll()
         try:
             urls = reviewProductParser.getPages(reviewSpider.load( [ review] )[0])  # урлы отзывов продуктов
         
