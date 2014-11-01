@@ -81,7 +81,7 @@ class TwitterSearcher(object):
                 break
             except Exception as e:
                 print 'twitter error ', e
-                if e != 88 or e != 131:
+                if e.response.status  != 88 or e.response.status != 131:
                     raise e 
                 self.api=tweepy.API(self.auth.GetAuth())
                 continue
@@ -119,7 +119,7 @@ class TwitterSearcher(object):
                 except Exception as e:
                     print 'access twitter err', e
                     
-                    if e != 88 or e != 131:
+                    if e.response.status != 88 or e.response.status != 131:
                         badUsr = True
                         break
                     

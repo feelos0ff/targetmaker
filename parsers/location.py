@@ -15,7 +15,7 @@ class LocationParser(object):
     '''
 
     def __init__(self):
-        self.exceptionTable = {'usa': 'United States', 'us':'United States', 'nyc':'Ney York', 'uk':'United Kingdom'}
+        self.exceptionTable = {'usa': ' United States ', 'us':' United States ', 'nyc':' New York ', 'uk':' United Kingdom '}
         self.es = ES('127.0.0.1:9200')
 
     def parse(self, address):
@@ -25,7 +25,7 @@ class LocationParser(object):
                 address = address.lower()
                 
                 for key, val in self.exceptionTable.items():
-                    address = re.sub(r'\W'+key+'\W',val,address)
+                    address = re.sub(r'(^|\W)'+key+'(\W|$)',val,address)
                 
                 res = QueryStringQuery(address)
                 res = self.es.search(query =res,indices ="geo-index")
@@ -52,9 +52,16 @@ class LocationParser(object):
         return 0
 
 '''
-es = ES('127.0.0.1:9200')
-res = TermQuery('country_code','gb')
-res = es.search(query =res,indices ="geo-index")
-for i in res:
-    print  i
+es = LocationParser()
+print es.parse('nyc nyc')
+print es.parse('ny')
+print es.parse('n')
+print es.parse(' ')
+print es.parse('')
+print es.parse('bg')
+print es.parse('uk')
+print es.parse('uka')
+print es.parse('usa')
+print es.parse('us')
+print es.parse('god save us')
 '''

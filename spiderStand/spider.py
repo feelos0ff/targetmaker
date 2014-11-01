@@ -30,7 +30,7 @@ class ConnectManager(object):
                        # "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.117 Safari/537.36",
                         #"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
                         ]
-        fileAgents = open("/home/feelosoff/workspace/targetmaker/rsc/userAgents.txt")
+        fileAgents = open("../rsc/userAgents.txt")
 
         for agent in fileAgents:
             self.headers.append(agent)
