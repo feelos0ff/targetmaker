@@ -126,7 +126,7 @@ def ProcessProductReview(idReviews):
     
     reviewProductParser = ReviewProductParser()
 #    точка предыдущей остановки
-    idxStart =79# idReviews.index('B006K2ZZ7K')
+    idxStart =165# idReviews.index('B006K2ZZ7K')
     
     print (idxStart, len(idReviews))
     for review in idReviews[ idxStart: ]:

@@ -37,7 +37,7 @@ class ConnectManager(object):
     
     def Erase(self, driver):
         self.freeDrivers.append(self.drivers.index(driver))
-    
+       
     def EraseAll(self):
         self.freeDrivers = range(self.count)
     
@@ -48,7 +48,7 @@ class ConnectManager(object):
         driver = webdriver.PhantomJS()#desired_capabilities=dcap)
         driver.set_page_load_timeout(30)
         driver.set_script_timeout(30)
-        
+
         return driver
             
     def GetDriver(self):
@@ -66,7 +66,7 @@ class ConnectManager(object):
     def RestartDriver(self, driver):
         num = self.drivers.index(driver)            
 
-        self.drivers[num].quit()
+        self.drivers[num].close()
         self.drivers[num] = self.CreateDriver()
         
         return self.drivers[num]
@@ -96,15 +96,14 @@ class Spider(object):
                 
                 try:
                     driver.get(self.placeFrom + url)
-                  #  print len(driver.page_source)
-                except:
-                    print 'driver exception' 
+                except Exception as e:
+                    print 'driver exception ', e 
                     
                     driver = manager.RestartDriver(driver)
                     sleep(1)
                     continue
                 
-              #  print driver.current_url
+               # print driver.current_url
                 if driver.current_url in lastUrls:
                     badCount += 1
                     break           
