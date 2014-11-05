@@ -10,9 +10,9 @@ from bulbs.rexster import Graph, Edge, Vertex
 from bulbs.rexster.client import REXSTER_URI
 
 
-Edge()
-Vertex()
-c = Config('http://localhost:8182/graphs/myorientgraph')
+#Edge()
+#Vertex()
+c = Config('http://localhost:8182/graphs/orientdbsample')
 g = Graph(c)
 
 james = g.vertices.create(name="James")
