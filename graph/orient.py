@@ -4,20 +4,12 @@ Created on 12 авг. 2014 г.
 
 @author: feelosoff
 '''
-
-from bulbs.config import Config
-from bulbs.rexster import Graph, Edge, Vertex
-from bulbs.rexster.client import REXSTER_URI
+import pyorient
 
 
-Edge()
-Vertex()
-c = Config('http://localhost:8182/graphs/myorientgraph')
-g = Graph(c)
-
-james = g.vertices.create(name="James")
-julie = g.vertices.create(name="Julie")
-g.edges.create(james, "knows", julie)
+client = pyorient.OrientDB("localhost", 2424)
+session_id = client.connect( "root", "9017CA15222093A14E41CB8A32527E61099711B5E902F07D72F4E3B479163971" )
+client.db_open( "testsox",  "root", "9017CA15222093A14E41CB8A32527E61099711B5E902F07D72F4E3B479163971"  )
 
 if __name__ == '__main__':
     pass
