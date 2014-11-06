@@ -126,7 +126,7 @@ def ProcessProductReview(idReviews):
     
     reviewProductParser = ReviewProductParser()
 #    точка предыдущей остановки
-    idxStart =165# idReviews.index('B006K2ZZ7K')
+    idxStart =705# idReviews.index('B006K2ZZ7K')
     
     print (idxStart, len(idReviews))
     for review in idReviews[ idxStart: ]:
@@ -146,7 +146,10 @@ def ProcessProductReview(idReviews):
                 print 'loads main pages' 
                 ProcessPersonReview(rootSpider.load(urls))
             except Exception as e:
-                print ' goods review error parser ' + page.current_url , e
+                try:
+                    print ' goods review error parser ' + page.current_url , e
+                except:
+                    pass
                 manager.Erase(page)
                 continue
      

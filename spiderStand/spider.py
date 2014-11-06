@@ -36,8 +36,10 @@ class ConnectManager(object):
             self.headers.append(agent)
     
     def Erase(self, driver):
-        self.freeDrivers.append(self.drivers.index(driver))
-       
+        try:
+            self.freeDrivers.append(self.drivers.index(driver))
+        except:
+            print  'wow wow wow driver truble'
     def EraseAll(self):
         self.freeDrivers = range(self.count)
     

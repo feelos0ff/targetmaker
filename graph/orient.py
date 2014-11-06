@@ -4,12 +4,16 @@ Created on 12 авг. 2014 г.
 
 @author: feelosoff
 '''
+
+
+
 import pyorient
 
-
 client = pyorient.OrientDB("localhost", 2424)
-session_id = client.connect( "root", "9017CA15222093A14E41CB8A32527E61099711B5E902F07D72F4E3B479163971" )
-client.db_open( "testsox",  "root", "9017CA15222093A14E41CB8A32527E61099711B5E902F07D72F4E3B479163971"  )
+session_id = client.connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
 
-if __name__ == '__main__':
-    pass
+client.db_open( 'tweezon', "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
+
+
+
+
