@@ -9,9 +9,12 @@ import pyorient
 from buildering.db import init_db
 from buildering.models import Goods, engine
 from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.orm.query import Query
 import json
 from numpy import prod
-
+from sqlalchemy.sql.expression import and_
+from sqlalchemy import func
+import sqlalchemy
 
 init_db()
 
@@ -20,16 +23,16 @@ session_id = client.connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D
 
 
 if not client.db_exists( 'tweezon', pyorient.STORAGE_TYPE_PLOCAL ):
-    client.db_create('tweezon', pyorient.DB_TYPE_GRAPH, pyorient.STORAGE_TYPE_PLOCAL )
-    tx = client.tx_commit()
-    tx.begin()
+    client.db_create('tweezon', pyorient.DB_TYPE_GRAPH, pyorient.STORAGE_TYPE_PLOCAL )        
     client.command( "create class Goods extends V" )
     client.command( "create class Categories extends V" )
     client.command( "create class CategoriesLink extends E" )
-    tx.commit()
+
 else:
     client.db_open( 'tweezon', "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
-
+tx = client.tx_commit()
+#tx.begin()
+#tx.commit()
 clusters = client.db_reload()
 clusters = {obj['name'] :obj for obj in clusters}
 
@@ -40,36 +43,45 @@ session = Session()
 
 def Depth(parent, tree, product):
     # toDo: добавить запись товара 
-    if tree.empty():
+    if tree == {}:
         if parent:
             client.command( "create edge CategoriesLink from "+ parent.rid + " to "+product.rid )
-    
-    for key, value in tree:
-        id = client.command( "create vertex Categories set value = "+ key )[0]
+    print tree.items()
+    for key, value in tree.items():
+        if key == '': 
+            continue
+        if key.find('\n') > 0:
+            continue
+      #  print "create vertex Categories set value = "+ key.encode('utf-8')
+        id = client.command( 'create vertex Categories set value = "'+ key.encode('utf-8') +'"' )[0]
         if parent:
             client.command( "create edge CategoriesLink from "+ parent.rid + " to "+id.rid )
         
-        Depth(id, value)
-            
-            
-            
-a = client.command( "create vertex Categories set value = 'azaza'")
-
-tx.begin()
-goods = session.query(Goods).all()
-
-for product in goods:
-    rec = {'@goods':{'id' : product.id, 
-                     'detail': product.detail, 
-                     'name': product.name, 
-                     'price':product.price, 
-                     'description':product.description,
-                     'brand':product.brand,
-                     'url':product.url } }
-
-    Depth(None, json.loads(product.category), client.record_create('goods', rec))
+        Depth(id, value, parent)
     
-res = tx.commit()
+            
+            
+#a = client.command( "create vertex Categories set value = 'azaza'")
+
+#tx.begin()
+num = session.query(func.count(Goods.url)).all()[0][0]
+shift = 100
+for i in xrange(0,num,shift):
+    goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
+    print goods
+    for product in goods:
+        rec = {'@goods':{'id' : product.id, 
+                         'detail': product.detail, 
+                         'name': product.name, 
+                         'price':product.price, 
+                         'description':product.description,
+                         'brand':product.brand,
+                         'url':product.url } }
+        Depth( None, 
+               {'rootGoods':json.loads(product.category)}, 
+               client.record_create(clusters['goods']['id'], rec) )
+    
+#res = tx.commit()
 
 '''
  id | category | detail | name | price | description | brand | url 

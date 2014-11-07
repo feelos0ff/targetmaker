@@ -135,13 +135,17 @@ class GoodsParser(object):
             salesRank = []
             
         bestSales = html.find_elements_by_class_name('zg_hrsr_ladder')
-        
+        if not bestSales == []:
+            salesRank = []
+            
         for line in bestSales:
             bufferSales = []
             line = line.find_elements_by_tag_name('a')
         
             for elem in line:
-                bufferSales.append(elem.text)
+                elem = elem.strip()
+                if not elem == '': 
+                    bufferSales.append(elem.text)
             
             salesRank.append(bufferSales)    
         
