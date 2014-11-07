@@ -80,6 +80,8 @@ class Goods(object):
                 return self.category[category[0]]
         return self.category
 
+    def getInfo(self):
+        pass
 
 class Reviews(object):
     '''

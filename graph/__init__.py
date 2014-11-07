@@ -10,6 +10,7 @@ from buildering.db import init_db
 from buildering.models import Goods, engine
 from sqlalchemy.orm.session import sessionmaker
 import json
+from numpy import prod
 
 
 init_db()
@@ -40,16 +41,15 @@ session = Session()
 def Depth(parent, tree, product):
     # toDo: добавить запись товара 
     if tree.empty():
-        client.command( "create vertex Goods set value =")
         if parent:
-            client.command( "create edge CategoriesLink from "+ parent.rid + " to "+id.rid )
+            client.command( "create edge CategoriesLink from "+ parent.rid + " to "+product.rid )
     
     for key, value in tree:
         id = client.command( "create vertex Categories set value = "+ key )[0]
         if parent:
             client.command( "create edge CategoriesLink from "+ parent.rid + " to "+id.rid )
         
-        Depth(id[0], value)
+        Depth(id, value)
             
             
             
@@ -57,11 +57,20 @@ a = client.command( "create vertex Categories set value = 'azaza'")
 
 tx.begin()
 goods = session.query(Goods).all()
+
 for product in goods:
-    categories = json.loads(product.category)
-    Depth(None, categories, product)
+    rec = {'@goods':{'id' : product.id, 
+                     'detail': product.detail, 
+                     'name': product.name, 
+                     'price':product.price, 
+                     'description':product.description,
+                     'brand':product.brand,
+                     'url':product.url } }
+
+    Depth(None, json.loads(product.category), client.record_create('goods', rec))
     
-tx.commit()
+res = tx.commit()
+
 '''
  id | category | detail | name | price | description | brand | url 
 ----------+--------------------------------------------------------------------------------
