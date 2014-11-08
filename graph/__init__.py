@@ -15,6 +15,8 @@ from numpy import prod
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
 import sqlalchemy
+import re
+import unicodedata2
 
 init_db()
 
@@ -43,7 +45,9 @@ session = Session()
 
 def Depth(parent, tree, product):
     # toDo: добавить запись товара 
+    print product
     if tree == {}:
+        print product
         if parent:
             client.command( "create edge CategoriesLink from "+ parent.rid + " to "+product.rid )
     print tree.items()
@@ -52,12 +56,14 @@ def Depth(parent, tree, product):
             continue
         if key.find('\n') > 0:
             continue
-      #  print "create vertex Categories set value = "+ key.encode('utf-8')
-        id = client.command( 'create vertex Categories set value = "'+ key.encode('utf-8') +'"' )[0]
+        print "create vertex Categories set value = "+ key.encode('utf-8')
+        
+        id = client.command( 'create vertex Categories set value = "'+ re.sub(r'\W',' ',key.encode('utf-8')) +'"' )[0]
+        print type(id)
         if parent:
             client.command( "create edge CategoriesLink from "+ parent.rid + " to "+id.rid )
         
-        Depth(id, value, parent)
+        Depth(id, value, product)
     
             
             
@@ -77,10 +83,18 @@ for i in xrange(0,num,shift):
                          'description':product.description,
                          'brand':product.brand,
                          'url':product.url } }
+        print json.dumps(rec)
+        print ( product.getInfo())
+    #    client.command("insert into Goods content {all:' hgh  ghj'}")
+        while True:
+            res = client.command("create vertex Goods set id = %d, detail ='%s',name='%s',description='%s', brand ='%s',url ='%s'") + product.getInfo())[0]
+            if res :
+                break
+        print res.rid 
         Depth( None, 
                {'rootGoods':json.loads(product.category)}, 
-               client.record_create(clusters['goods']['id'], rec) )
-    
+                res)
+unicodedata2.normalize('NFD', product.category)
 #res = tx.commit()
 
 '''
