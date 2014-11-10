@@ -6,14 +6,20 @@ Created on 12 авг. 2014 г.
 '''
 
 
-
-import pyorient
-
-client = pyorient.OrientDB("localhost", 2424)
-session_id = client.connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
-
-client.db_open( 'tweezon', "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
+from encodings.base64_codec import base64_decode,base64_encode
+from requests.auth import HTTPBasicAuth
+import requests
 
 
-
-
+class OrientWrapper(object):
+    def __init__(self):
+        self.session = 0
+        self.db = ''
+        
+    def connect(self, login, password, dbName):
+      #  password =base64_encode(password)
+        self.db = dbName
+        response = requests.get('http://localhost:2480/connect/' +dbName,auth=HTTPBasicAuth(login, password))
+        self.session = response.headers['OSESSIONID']
+        
+        return response

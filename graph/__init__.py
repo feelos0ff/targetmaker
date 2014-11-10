@@ -11,17 +11,17 @@ from buildering.models import Goods, engine
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.orm.query import Query
 import json
-from numpy import prod
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
 import sqlalchemy
 import re
 import unicodedata2
+from graph.orient import OrientWrapper
 
 init_db()
 
 client = pyorient.OrientDB("localhost", 2424)
-session_id = client.connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
+session_id = OrientWrapper().connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94",'tweezon' )
 
 
 if not client.db_exists( 'tweezon', pyorient.STORAGE_TYPE_PLOCAL ):
@@ -84,17 +84,30 @@ for i in xrange(0,num,shift):
                          'brand':product.brand,
                          'url':product.url } }
         print json.dumps(rec)
-        print ( product.getInfo())
-    #    client.command("insert into Goods content {all:' hgh  ghj'}")
+        print ( "create vertex Goods set id = %d, detail ='%s',name='%s',description='%s', brand ='%s',url ='%s'"
+                                 %(product.id,
+                                   unicodedata2.normalize('NFD',product.detail),
+                                   unicodedata2.normalize('NFD',product.name),
+                                unicodedata2.normalize('NFD',product.description),
+                                unicodedata2.normalize('NFD',product.brand),
+                                unicodedata2.normalize('NFD', product.url)))
+        #client.command("insert into Goods content {all:' hgh  ghj'}")
         while True:
-            res = client.command("create vertex Goods set id = %d, detail ='%s',name='%s',description='%s', brand ='%s',url ='%s'") + product.getInfo())[0]
+            res = client.command( "create vertex Goods set id = %d, detail ='%s',name='%s',description='%s', brand ='%s',url ='%s'"
+                                 %(product.id,
+                                   unicodedata2.normalize('NFD',product.detail),
+                                   unicodedata2.normalize('NFD',product.name),
+                                unicodedata2.normalize('NFD',product.description),
+                                unicodedata2.normalize('NFD',product.brand),
+                                unicodedata2.normalize('NFD', product.url)))
             if res :
                 break
         print res.rid 
         Depth( None, 
                {'rootGoods':json.loads(product.category)}, 
                 res)
-unicodedata2.normalize('NFD', product.category)
+        
+        print unicodedata2.normalize('NFD', product.category)
 #res = tx.commit()
 
 '''
