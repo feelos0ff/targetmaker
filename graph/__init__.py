@@ -4,7 +4,8 @@ Created on 12 авг. 2014 г.
 
 @author: feelosoff
 '''
-
+from bulbs.rexster import Graph,REXSTER_URI,Vertex,Edge
+from bulbs.config import Config
 import pyorient
 from buildering.db import init_db
 from buildering.models import Goods, engine
@@ -16,29 +17,38 @@ from sqlalchemy import func
 import sqlalchemy
 import re
 import unicodedata2
-from graph.orient import OrientWrapper
+from bulbs.model import Node, Relationship
+from bulbs.property import Integer, String, Float
+#from graph.orient import OrientWrapper
 
 init_db()
 
-client = pyorient.OrientDB("localhost", 2424)
-session_id = OrientWrapper().connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94",'tweezon' )
+c = Config('http://localhost:8182/graphs/orientdbsample')
+g = Graph(config = c)
 
 
-if not client.db_exists( 'tweezon', pyorient.STORAGE_TYPE_PLOCAL ):
-    client.db_create('tweezon', pyorient.DB_TYPE_GRAPH, pyorient.STORAGE_TYPE_PLOCAL )        
-    client.command( "create class Goods extends V" )
-    client.command( "create class Categories extends V" )
-    client.command( "create class CategoriesLink extends E" )
+class GraphGoods(Node):
+    element_type = 'goods'
+    num = Integer()
+    detail = String()
+    name = String()
+    price = Float()
+    description = String()
+    brand = String()
+    url = String()
+    
+class GraphCategory(Node):
+    element_type = 'category'
+    value = String()
 
-else:
-    client.db_open( 'tweezon', "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
-tx = client.tx_commit()
-#tx.begin()
-#tx.commit()
-clusters = client.db_reload()
-clusters = {obj['name'] :obj for obj in clusters}
+class GraphCategoriesLink(Relationship):
+    label= 'categoriesLink'
 
-tx = client.tx_commit()
+#v = Vertex()
+
+g.add_proxy("goods", GraphGoods)
+g.add_proxy("category", GraphCategory)
+g.add_proxy("categoriesLink", GraphCategoriesLink)
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -47,68 +57,55 @@ def Depth(parent, tree, product):
     # toDo: добавить запись товара 
     print product
     if tree == {}:
-        print product
         if parent:
-            client.command( "create edge CategoriesLink from "+ parent.rid + " to "+product.rid )
-    print tree.items()
-    for key, value in tree.items():
+            g.categoriesLink.create(parent, product)
+            
+    for key, val in tree.items():
         if key == '': 
             continue
         if key.find('\n') > 0:
-            continue
-        print "create vertex Categories set value = "+ key.encode('utf-8')
-        
-        id = client.command( 'create vertex Categories set value = "'+ re.sub(r'\W',' ',key.encode('utf-8')) +'"' )[0]
-        print type(id)
+            continue    
+        print key
+        category = g.category.create(value= unicodedata2.normalize('NFD',unicode(key )))  
+      
         if parent:
-            client.command( "create edge CategoriesLink from "+ parent.rid + " to "+id.rid )
+            g.categoriesLink.create(parent,category)
         
-        Depth(id, value, product)
+        Depth(category, val, product)
     
             
-            
-#a = client.command( "create vertex Categories set value = 'azaza'")
-
-#tx.begin()
 num = session.query(func.count(Goods.url)).all()[0][0]
 shift = 100
+
+class Person(Node):
+    element_type = "person"
+    
+    name = String(nullable=False)
+    age = Integer()
+
+g.add_proxy("people", Person)
+james = g.people.create(name="James")
+print james.eid
 for i in xrange(0,num,shift):
     goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
     print goods
+
     for product in goods:
-        rec = {'@goods':{'id' : product.id, 
-                         'detail': product.detail, 
-                         'name': product.name, 
-                         'price':product.price, 
-                         'description':product.description,
-                         'brand':product.brand,
-                         'url':product.url } }
-        print json.dumps(rec)
-        print ( "create vertex Goods set id = %d, detail ='%s',name='%s',description='%s', brand ='%s',url ='%s'"
-                                 %(product.id,
-                                   unicodedata2.normalize('NFD',product.detail),
-                                   unicodedata2.normalize('NFD',product.name),
-                                unicodedata2.normalize('NFD',product.description),
-                                unicodedata2.normalize('NFD',product.brand),
-                                unicodedata2.normalize('NFD', product.url)))
-        #client.command("insert into Goods content {all:' hgh  ghj'}")
-        while True:
-            res = client.command( "create vertex Goods set id = %d, detail ='%s',name='%s',description='%s', brand ='%s',url ='%s'"
-                                 %(product.id,
-                                   unicodedata2.normalize('NFD',product.detail),
-                                   unicodedata2.normalize('NFD',product.name),
-                                unicodedata2.normalize('NFD',product.description),
-                                unicodedata2.normalize('NFD',product.brand),
-                                unicodedata2.normalize('NFD', product.url)))
-            if res :
-                break
-        print res.rid 
+        rec = g.goods.create(
+                             num = product.id,        
+                             detail= unicodedata2.normalize('NFD',product.detail), 
+                             name = unicodedata2.normalize('NFD',product.name), 
+                             price = product.price, 
+                             description = unicodedata2.normalize('NFD',product.description),
+                             brand = unicodedata2.normalize('NFD',product.brand),
+                             url = product.url
+                             )
+        
+      
         Depth( None, 
                {'rootGoods':json.loads(product.category)}, 
-                res)
-        
-        print unicodedata2.normalize('NFD', product.category)
-#res = tx.commit()
+                rec)
+
 
 '''
  id | category | detail | name | price | description | brand | url 
