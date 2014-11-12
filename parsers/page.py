@@ -7,6 +7,7 @@ Created on 30 авг. 2014 г.
 import re
 from buildering.models import Persons, Reviews, Goods
 from datetime import datetime
+from spiderStand.spider import Spider
 
 
 class ReviewProductParser(object):
@@ -110,7 +111,7 @@ class GoodsParser(object):
         pass
     
     def getGoods(self, html):
-        descriptions = html.find_elements_by_class_name('productDescriptionWrapper')
+        descriptions = html.find_elements_by_css_selector('div.productDescriptionWrapper')
         description = ''
         
         for txt in descriptions:
@@ -176,4 +177,9 @@ class GoodsParser(object):
         goods.price = price
 
         return goods
-        
+
+'''
+gp = GoodsParser()
+l = Spider('','')
+gp.getGoods(l.load(['http://www.amazon.com/The-Indian-Slow-Cooker-Authentic/dp/1572841117'])[0])    
+'''

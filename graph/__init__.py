@@ -39,12 +39,12 @@ class GraphGoods(Node):
     
 class GraphCategory(Node):
     element_type = 'category'
-    value = String()
+    
 
 class GraphCategoriesLink(Relationship):
     label= 'categoriesLink'
+    name = String()
 
-#v = Vertex()
 
 g.add_proxy("goods", GraphGoods)
 g.add_proxy("category", GraphCategory)
@@ -53,57 +53,68 @@ g.add_proxy("categoriesLink", GraphCategoriesLink)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+client = g.client_class 
+
 def Depth(parent, tree, product):
-    # toDo: добавить запись товара 
-    print product
+   # print product
     if tree == {}:
-        if parent:
-            g.categoriesLink.create(parent, product)
-            
+        print parent, product
+        k = unicodedata2.normalize('NFD',unicode(product.name )).strip()
+        print k
+        e = g.categoriesLink.create(parent, product, {'name': k})
+        
     for key, val in tree.items():
         if key == '': 
             continue
         if key.find('\n') > 0:
             continue    
-        print key
-        category = g.category.create(value= unicodedata2.normalize('NFD',unicode(key )))  
-      
-        if parent:
-            g.categoriesLink.create(parent,category)
         
+        k = unicodedata2.normalize('NFD',unicode(key )).strip()
+       # print k
+      #  print parent.outE()
+        category = ''
+        
+        if not parent.outE() or not (k in [i.name for i in parent.outE()]):
+            category = g.category.create()  
+            e = g.categoriesLink.create(parent,category, {'name':k})
+
+        else:
+            category = [i for i in parent.outE() if i.name == k][0]             
+            print category.name
         Depth(category, val, product)
     
             
 num = session.query(func.count(Goods.url)).all()[0][0]
 shift = 100
 
-class Person(Node):
-    element_type = "person"
-    
-    name = String(nullable=False)
-    age = Integer()
-
-g.add_proxy("people", Person)
-james = g.people.create(name="James")
-print james.eid
+rootNode = g.category.create()
+  
 for i in xrange(0,num,shift):
     goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
-    print goods
-
+    
     for product in goods:
+        '''
+        print len(unicodedata2.normalize('NFD',product.description))
+        print ( product.id,unicodedata2.normalize('NFD',product.detail),
+                unicodedata2.normalize('NFD',product.detail),
+                product.price,
+                unicodedata2.normalize('NFD',product.description),
+                unicodedata2.normalize('NFD',product.brand),
+                product.url)
+        '''
         rec = g.goods.create(
                              num = product.id,        
-                             detail= unicodedata2.normalize('NFD',product.detail), 
-                             name = unicodedata2.normalize('NFD',product.name), 
+                             detail= unicodedata2.normalize('NFD',product.detail)[0:5000], 
+                             name = unicodedata2.normalize('NFD',product.name)[0:5000], 
                              price = product.price, 
-                             description = unicodedata2.normalize('NFD',product.description),
-                             brand = unicodedata2.normalize('NFD',product.brand),
-                             url = product.url
+                             description = unicodedata2.normalize('NFD',product.description)[0:5000],
+                             brand = unicodedata2.normalize('NFD',product.brand)[0:5000],
+                             url = product.url[0:5000]
                              )
         
       
-        Depth( None, 
-               {'rootGoods':json.loads(product.category)}, 
+        Depth( rootNode, 
+               json.loads(product.category), 
                 rec)
 
 
