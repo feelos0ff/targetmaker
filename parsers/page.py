@@ -7,7 +7,8 @@ Created on 30 авг. 2014 г.
 import re
 from buildering.models import Persons, Reviews, Goods
 from datetime import datetime
-
+from spiderStand import spider
+from spiderStand.spider import Spider
 
 class ReviewProductParser(object):
 
@@ -172,4 +173,8 @@ class GoodsParser(object):
         goods.price = price
 
         return goods
-        
+
+s = Spider('', '')
+p =s.load(['http://www.amazon.com/DVI-Gear-HDMI-Cable-feet/dp/B0002L5R78'])
+par = GoodsParser()
+par.getGoods(p[0])
