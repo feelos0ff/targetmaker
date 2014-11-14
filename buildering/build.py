@@ -20,7 +20,7 @@ from parsers.page import ReviewProductParser, ReviewPersonParser, GoodsParser
 
 from buildering.models import  engine, Persons, Goods
 from sqlalchemy.orm import sessionmaker
-from db import init_db
+from db import InitDB
 from sqlalchemy import and_
 
 
@@ -156,7 +156,7 @@ def ProcessProductReview(idReviews):
    
 if __name__ == '__main__':
     
-    init_db()
+    InitDB()
    
     goods = FoodParser()
     

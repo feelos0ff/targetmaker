@@ -16,7 +16,7 @@ from sqlalchemy.schema import Column, Table, Sequence, MetaData
 from sqlalchemy.orm import mapper, relation
 from sqlalchemy.types import String, Float, Integer, DateTime
 
-def init_db():
+def InitDB():
     metadata = MetaData()
     
     persons = Table('person', metadata,
