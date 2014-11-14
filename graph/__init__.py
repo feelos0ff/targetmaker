@@ -83,11 +83,23 @@ for i in xrange(0,num,shift):
                          'description':product.description,
                          'brand':product.brand,
                          'url':product.url } }
-        print json.dumps(rec)
-        print ( product.getInfo())
-    #    client.command("insert into Goods content {all:' hgh  ghj'}")
+       # print json.dumps(rec)
+        #print ( product.getInfo())
+
+        rec =(("create vertex Goods set id = %d," % product.id) +
+                                 ( "detail ='%s'," %product.detail ) +
+                                 ("name='%s'," % product.name) +
+                                 ("description='%s'," % product.description )+
+                                 ("brand ='%s'," % product.brand) +
+                                 ("url ='%s'" % product.url)
+             )
+       
+        client.command(r"""create vertex Goods set id = 1,detail =' Levolor 14062 Window Hardware Brass',name='Levolor Curtain Rod Center Support Bracket 3-1/2" Projection Chrome',description=' 14062 Features: -Product Type:Chain And Hooks. Dimensions: -Overall Height - Top to Bottom:0.25 -Overall Width - Side to Side:3.25 -Overall Depth - Front to Back:7 -Overall Product Weight:0.06',brand ='Levolor',url ='http://www.amazon.com/Levolor-Curtain-Support-Bracket-Projection/dp/B000M3THTU'
+""")
+        print 'df'
         while True:
-            res = client.command("create vertex Goods set id = %d, detail ='%s',name='%s',description='%s', brand ='%s',url ='%s'") + product.getInfo())[0]
+            res = client.command(rec)
+                                  
             if res :
                 break
         print res.rid 
