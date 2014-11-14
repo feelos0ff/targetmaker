@@ -4,110 +4,118 @@ Created on 12 авг. 2014 г.
 
 @author: feelosoff
 '''
-
+from bulbs.rexster import Graph,REXSTER_URI,Vertex,Edge
+from bulbs.config import Config
 import pyorient
 from buildering.db import init_db
 from buildering.models import Goods, engine
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.orm.query import Query
 import json
-from numpy import prod
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
 import sqlalchemy
 import re
 import unicodedata2
+from bulbs.model import Node, Relationship
+from bulbs.property import Integer, String, Float
+#from graph.orient import OrientWrapper
 
 init_db()
 
-client = pyorient.OrientDB("localhost", 2424)
-session_id = client.connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
+c = Config('http://localhost:8182/graphs/orientdbsample')
+g = Graph(config = c)
 
 
-if not client.db_exists( 'tweezon', pyorient.STORAGE_TYPE_PLOCAL ):
-    client.db_create('tweezon', pyorient.DB_TYPE_GRAPH, pyorient.STORAGE_TYPE_PLOCAL )        
-    client.command( "create class Goods extends V" )
-    client.command( "create class Categories extends V" )
-    client.command( "create class CategoriesLink extends E" )
+class GraphGoods(Node):
+    element_type = 'goods'
+    num = Integer()
+    detail = String()
+    name = String()
+    price = Float()
+    description = String()
+    brand = String()
+    url = String()
+    
+class GraphCategory(Node):
+    element_type = 'category'
+    
 
-else:
-    client.db_open( 'tweezon', "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
-tx = client.tx_commit()
-#tx.begin()
-#tx.commit()
-clusters = client.db_reload()
-clusters = {obj['name'] :obj for obj in clusters}
+class GraphCategoriesLink(Relationship):
+    label= 'categoriesLink'
+    name = String()
 
-tx = client.tx_commit()
+
+g.add_proxy("goods", GraphGoods)
+g.add_proxy("category", GraphCategory)
+g.add_proxy("categoriesLink", GraphCategoriesLink)
 
 Session = sessionmaker(bind=engine)
 session = Session()
 
+client = g.client_class 
+
 def Depth(parent, tree, product):
-    # toDo: добавить запись товара 
-    print product
+   # print product
     if tree == {}:
-        print product
-        if parent:
-            client.command( "create edge CategoriesLink from "+ parent.rid + " to "+product.rid )
-    print tree.items()
-    for key, value in tree.items():
+        print parent, product
+        k = unicodedata2.normalize('NFD',unicode(product.name )).strip()
+        print k
+        e = g.categoriesLink.create(parent, product, {'name': k})
+        
+    for key, val in tree.items():
         if key == '': 
             continue
         if key.find('\n') > 0:
-            continue
-        print "create vertex Categories set value = "+ key.encode('utf-8')
+            continue    
         
-        id = client.command( 'create vertex Categories set value = "'+ re.sub(r'\W',' ',key.encode('utf-8')) +'"' )[0]
-        print type(id)
-        if parent:
-            client.command( "create edge CategoriesLink from "+ parent.rid + " to "+id.rid )
+        k = unicodedata2.normalize('NFD',unicode(key )).strip()
+       # print k
+      #  print parent.outE()
+        category = ''
         
-        Depth(id, value, product)
+        if not parent.outE() or not (k in [i.name for i in parent.outE()]):
+            category = g.category.create()  
+            e = g.categoriesLink.create(parent,category, {'name':k})
+
+        else:
+            category = [i for i in parent.outE() if i.name == k][0]             
+            print category.name
+        Depth(category, val, product)
     
             
-            
-#a = client.command( "create vertex Categories set value = 'azaza'")
-
-#tx.begin()
 num = session.query(func.count(Goods.url)).all()[0][0]
 shift = 100
+
+rootNode = g.category.create()
+  
 for i in xrange(0,num,shift):
     goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
-    print goods
+    
     for product in goods:
-        rec = {'@goods':{'id' : product.id, 
-                         'detail': product.detail, 
-                         'name': product.name, 
-                         'price':product.price, 
-                         'description':product.description,
-                         'brand':product.brand,
-                         'url':product.url } }
-       # print json.dumps(rec)
-        #print ( product.getInfo())
-
-        rec =(("create vertex Goods set id = %d," % product.id) +
-                                 ( "detail ='%s'," %product.detail ) +
-                                 ("name='%s'," % product.name) +
-                                 ("description='%s'," % product.description )+
-                                 ("brand ='%s'," % product.brand) +
-                                 ("url ='%s'" % product.url)
-             )
-       
-        client.command(r"""create vertex Goods set id = 1,detail =' Levolor 14062 Window Hardware Brass',name='Levolor Curtain Rod Center Support Bracket 3-1/2" Projection Chrome',description=' 14062 Features: -Product Type:Chain And Hooks. Dimensions: -Overall Height - Top to Bottom:0.25 -Overall Width - Side to Side:3.25 -Overall Depth - Front to Back:7 -Overall Product Weight:0.06',brand ='Levolor',url ='http://www.amazon.com/Levolor-Curtain-Support-Bracket-Projection/dp/B000M3THTU'
-""")
-        print 'df'
-        while True:
-            res = client.command(rec)
-                                  
-            if res :
-                break
-        print res.rid 
-        Depth( None, 
-               {'rootGoods':json.loads(product.category)}, 
-                res)
-unicodedata2.normalize('NFD', product.category)
-#res = tx.commit()
+        '''
+        print len(unicodedata2.normalize('NFD',product.description))
+        print ( product.id,unicodedata2.normalize('NFD',product.detail),
+                unicodedata2.normalize('NFD',product.detail),
+                product.price,
+                unicodedata2.normalize('NFD',product.description),
+                unicodedata2.normalize('NFD',product.brand),
+                product.url)
+        '''
+        rec = g.goods.create(
+                             num = product.id,        
+                             detail= unicodedata2.normalize('NFD',product.detail)[0:5000], 
+                             name = unicodedata2.normalize('NFD',product.name)[0:5000], 
+                             price = product.price, 
+                             description = unicodedata2.normalize('NFD',product.description)[0:5000],
+                             brand = unicodedata2.normalize('NFD',product.brand)[0:5000],
+                             url = product.url[0:5000]
+                             )
+        
+      
+        Depth( rootNode, 
+               json.loads(product.category), 
+                rec)
 
 '''
  id | category | detail | name | price | description | brand | url 

@@ -92,7 +92,7 @@ class Goods(object):
         
         res = '{' + res + "'}"
 
-        return res.encode('ascii').capitalize()
+        return res.encode('utf-8').capitalize()
 
 class Reviews(object):
     '''

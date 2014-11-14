@@ -6,14 +6,38 @@ Created on 12 авг. 2014 г.
 '''
 
 
-
-import pyorient
-
-client = pyorient.OrientDB("localhost", 2424)
-session_id = client.connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
-
-client.db_open( 'tweezon', "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
+from encodings.base64_codec import base64_decode,base64_encode
+from requests.auth import HTTPBasicAuth
+import requests
+import json
+#from requests import cookies
 
 
-
-
+class OrientWrapper(object):
+    def __init__(self):
+        self.session = {}
+        self.db = ''
+        
+    def connect(self, login, password, dbName):
+        self.db = dbName
+        response = requests.get('http://localhost:2480/connect/' +dbName,auth=HTTPBasicAuth(login, password))
+        self.session = dict(OSESSIONID = response.cookies['OSESSIONID'])
+        
+        return response
+    
+    def display(self,entityType,subject):
+        if entityType:
+            url = ('http://localhost:2480/%s/%s/%s' %(entityType, self.db, subject))
+        else:
+            url = 'http://localhost:2480/listDatabases'
+        
+        return requests.get(url,cookies=self.session)
+    
+    def create(self, entityType,body,subject):
+        url = ('http://localhost:2480/%s/%s/%s' %(entityType, self.db, subject))
+        response = requests.post(url,data=json.dumps(body),cookies=self.session)
+        
+        return response
+        
+    def update(self,):
+        pass
