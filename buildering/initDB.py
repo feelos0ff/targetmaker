@@ -4,7 +4,7 @@ Created on 18 окт. 2014 г.
 
 @author: feelosoff
 '''
-from buildering.db import init_db
+from buildering.db import InitDB
 from buildering.models import engine, Countries, Regions, Cities
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql.expression import and_
@@ -21,11 +21,8 @@ def toElastic():
         print(res['created'])
 
 
-        
-
-
 if __name__ == '__main__':
-    init_db()
+    InitDB()
     
     Session = sessionmaker(bind=engine)
     session = Session()
