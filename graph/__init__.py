@@ -56,11 +56,8 @@ session = Session()
 client = g.client_class 
 
 def Depth(parent, tree, product):
-   # print product
     if tree == {}:
-        print parent, product
         k = unicodedata2.normalize('NFD',unicode(product.name )).strip()
-        print k
         e = g.categoriesLink.create(parent, product, {'name': k})
         
     for key, val in tree.items():
@@ -70,8 +67,7 @@ def Depth(parent, tree, product):
             continue    
         
         k = unicodedata2.normalize('NFD',unicode(key )).strip()
-       # print k
-      #  print parent.outE()
+
         category = ''
         
         if not parent.outE() or not (k in [i.name for i in parent.outE()]):
@@ -79,8 +75,8 @@ def Depth(parent, tree, product):
             e = g.categoriesLink.create(parent,category, {'name':k})
 
         else:
-            category = [i for i in parent.outE() if i.name == k][0]             
-            print category.name
+            print k
+            category = [i for i in parent.outE() if i.name == k][0].outV()           
         Depth(category, val, product)
     
             
