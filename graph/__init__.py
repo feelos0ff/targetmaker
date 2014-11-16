@@ -31,20 +31,28 @@ class GraphCategoriesLink(Relationship):
     name = String()
 
 
-rootNode = None
-g = None
-
 
 def InitGraph():
+    global g
+    global rootNode
+    
     c = Config('http://localhost:8182/graphs/orientdbsample')
     g = Graph(config = c)
-    
+
     g.add_proxy("categoryRoot", GraphCategoryRoot)
     g.add_proxy("goods", GraphGoods)
     g.add_proxy("category", GraphCategory)
     g.add_proxy("categoriesLink", GraphCategoriesLink)
     
-    if not g.categoryRoot.get_all():
+    return g
+
+
+def GetRoot(g):
+    
+    if not g.categoryRoot.get_all().next():
         rootNode = g.categoryRoot.create()
     else:
-        rootNode = g.categoryRoot.get_all()[0]
+        rootNode = g.categoryRoot.get_all().next()
+
+    return rootNode
+    

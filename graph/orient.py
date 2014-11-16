@@ -9,18 +9,18 @@ import json
 from sqlalchemy.orm.session import sessionmaker
 from buildering.models import engine, Goods
 import unicodedata2
-from graph import g, rootNode
+from graph import InitGraph,  GetRoot
 from buildering.db import InitDB
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
 
+g = InitGraph()
+rootNode = GetRoot(g)
 
 def Depth(parent, tree, product):
     if tree == {}:
-        print parent, product
         k = unicodedata2.normalize('NFD',unicode(product.name )).strip()
-        print k
-        e = g.categoriesLink.create(parent, product, {'name': k})
+        g.categoriesLink.create(parent, product, {'name': k})
         
     for key, val in tree.items():
         if key == '': 
@@ -33,7 +33,7 @@ def Depth(parent, tree, product):
         
         if not parent.outE() or not (k in [i.name for i in parent.outE()]):
             category = g.category.create()  
-            e = g.categoriesLink.create(parent,category, {'name':k})
+            g.categoriesLink.create(parent,category, {'name':k})
 
         else:
             category = [i for i in parent.outE() if i.name == k][0].outV()             
@@ -48,14 +48,23 @@ def ConvertFromSQLToGraph():
     
     num = session.query(func.count(Goods.url)).all()[0][0]
     shift = 100
-      
-    for i in xrange(0,num,shift):
+    import hotshot
+    prof = hotshot.Profile("your_project.prof")
+    prof.start()
+    for i in xrange(0,500,shift):
         goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
-        
+        count = 1
         for product in goods:
             AddProductToGraph(product)
-
+            print i + count
+            count +=1
+        
+        
+        
+    prof.stop()
+    
 def AddProductToGraph(product):
+
     rec = g.goods.create(
                           num = product.id,        
                           detail= unicodedata2.normalize('NFD',product.detail)[0:5000], 
@@ -68,4 +77,6 @@ def AddProductToGraph(product):
     Depth( rootNode, 
            json.loads(product.category), 
            rec)
-    
+
+
+ConvertFromSQLToGraph()   
