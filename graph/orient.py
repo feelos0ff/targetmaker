@@ -7,13 +7,14 @@ Created on 12 авг. 2014 г.
 
 import json
 from sqlalchemy.orm.session import sessionmaker
-from buildering.models import engine, Goods
+from buildering.models import engine, Goods, Persons
 import unicodedata2
 from graph import InitGraph,  GetRoot, TweeUser
 from buildering.db import InitDB
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
-
+from twitter.request import TwitterSearcher    
+import hotshot
 
 g = InitGraph()
 rootNode = GetRoot(g)
@@ -41,28 +42,6 @@ def Depth(parent, tree, product):
 
         Depth(category, val, product)
     
-def ConvertFromSQLToGraph():
-    InitDB()
-    
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    
-    num = session.query(func.count(Goods.url)).all()[0][0]
-    shift = 100
-    import hotshot
-    prof = hotshot.Profile("your_project.prof")
-    prof.start()
-    for i in xrange(0,500,shift):
-        goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
-        count = 1
-        for product in goods:
-            AddProductToGraph(product)
-            print i + count
-            count +=1
-        
-        
-        
-    prof.stop()
     
 def AddProductToGraph(product):
 
@@ -101,5 +80,35 @@ def AddUserToGraph(userLogin, searcher):
             if not inGraph.outE(name=user.screen_name):
                 g.follow.create(follower,user , {'name' : user.screen_name})
             
+
+def ConvertFromSQLToGraph():
+    
+    InitDB()
+    
+    searcher = TwitterSearcher()
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    
+    num = session.query(func.count(Goods.url)).all()[0][0]
+    shift = 100
+
+    prof = hotshot.Profile("your_project.prof")
+    prof.start()
+    
+    for i in xrange(0,num,shift):
+        goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
+        for product in goods:
+            AddProductToGraph(product)
+
+    num = session.query(func.count(Persons.id)).all()[0][0]
+    
+    for i in xrange(0,num,shift):
+        user = session.query(Persons).filter(and_(Persons.id < i + shift, Persons.id >= i)).all()
+        for product in goods:
+            AddProductToGraph(product)
+            AddUserToGraph(user.twitterAccount,searcher)
+            
+    prof.stop()
+    
     
 ConvertFromSQLToGraph()   
