@@ -8,7 +8,7 @@ from bulbs.rexster import Graph
 from bulbs.config import Config
 from bulbs.model import Node, Relationship
 from bulbs.property import Integer, String, Float
-
+from tweepy.models import User
 
 class GraphGoods(Node):
     element_type = 'goods'
