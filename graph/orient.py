@@ -9,10 +9,11 @@ import json
 from sqlalchemy.orm.session import sessionmaker
 from buildering.models import engine, Goods
 import unicodedata2
-from graph import InitGraph,  GetRoot
+from graph import InitGraph,  GetRoot, TweeUser
 from buildering.db import InitDB
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
+
 
 g = InitGraph()
 rootNode = GetRoot(g)
@@ -31,12 +32,12 @@ def Depth(parent, tree, product):
         k = unicodedata2.normalize('NFD',unicode(key )).strip()
         category = ''
         
-        if not parent.outE() or not (k in [i.name for i in parent.outE()]):
+        if not parent.outE() or not parent.outE(name=k):
             category = g.category.create()  
             g.categoriesLink.create(parent,category, {'name':k})
 
         else:
-            category = [i for i in parent.outE() if i.name == k][0].outV()             
+            category = parent.outE(name=k).outV()             
 
         Depth(category, val, product)
     
@@ -78,5 +79,27 @@ def AddProductToGraph(product):
            json.loads(product.category), 
            rec)
 
-
+def AddUserToGraph(userLogin, searcher):
+    inGraph = g.twitterUser.index.lookup(screen_name=userLogin).next() 
+    
+    if not inGraph:
+        user = TweeUser (searcher.getPerson(userLogin))
+        user = g.twitterUser.create( user )
+    else:
+        user = inGraph
+        
+    followers = user.followers()
+    
+    for follower in followers:
+        inGraph = g.twitterUser.index.lookup(screen_name=follower.screen_name).next() 
+        
+        if not inGraph:
+            follower = g.twitterUser.create( TweeUser(follower) )
+            g.follow.create(follower,user , {'name' : user.screen_name})
+            
+        else:
+            if not inGraph.outE(name=user.screen_name):
+                g.follow.create(follower,user , {'name' : user.screen_name})
+            
+    
 ConvertFromSQLToGraph()   

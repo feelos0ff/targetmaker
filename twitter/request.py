@@ -107,9 +107,7 @@ class TwitterSearcher(object):
         rankedUsers.sort(key= lambda el: -el[1] -  el[2] - el[3])
        
         for usr in rankedUsers:
-            badUsr = False
-         #   print usr[1:], usr[0].screen_name, usr[0].description
-            
+            badUsr = False            
             while True:
                 try:
                     if len(usr[0].followers()) < 5:
@@ -136,6 +134,17 @@ class TwitterSearcher(object):
             return usr[0].screen_name
 
         return None
+    
+    def getPerson(self,user, maxDepth = 10):
+        if maxDepth == 0:
+            return None
+        try:
+            res = self.api.search_users('@'+user)[0]
+        except Exception as e:
+            print 'get person error ' + e 
+            self.api=tweepy.API(self.auth.GetAuth())
+            res = self.GetPerson(user, maxDepth - 1)
+        return res
 '''
 p = Persons()
 p.name = "dll pa"
