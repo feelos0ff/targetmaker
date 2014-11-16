@@ -12,6 +12,7 @@ from nltk.corpus import stopwords
 import nltk
 from math import log
 from twitter.oAuth import TwitterAuth
+from buildering.models import Persons
 
 
 class TwitterSearcher(object):
@@ -135,22 +136,39 @@ class TwitterSearcher(object):
 
         return None
     
-    def getPerson(self,user, maxDepth = 10):
-        if maxDepth == 0:
-            return None
-        try:
-            res = self.api.search_users('@'+user)[0]
-        except Exception as e:
-            print 'get person error ' + e 
-            self.api=tweepy.API(self.auth.GetAuth())
-            res = self.GetPerson(user, maxDepth - 1)
+    def getPerson(self,user):
+        res = None
+        for i in xrange(5* len(self.auth.access_key)):
+            try:
+                res = self.api.search_users('@'+user)[0]
+                break
+            except Exception as e:
+                print 'get person error ', e 
+                self.api=tweepy.API(self.auth.GetAuth())
+            
         return res
-'''
+    
+    
+    def getPersonActions(self, user):
+        res = None
+        for i in xrange(5* len(self.auth.access_key)):
+            try:
+                res = self.api.user_timeline('@'+user,count = 150)
+                break
+            except Exception as e:
+                print 'get person error ', e 
+                self.api=tweepy.API(self.auth.GetAuth())
+            
+        return res
+
 p = Persons()
 p.name = "dll pa"
-#p.location = "Bakersfield, CA"
-#p.name = 'Natalia Corres'
-#p.nickName = 'tech whisperer, artist, making things happen'
+p.location = "Bakersfield, CA"
+p.name = 'Natalia Corres'
+p.nickName = 'tech whisperer, artist, making things happen'
 ts = TwitterSearcher()
-print ts.getSameUser(p)
-'''
+ts = ts.getPersonActions(  "pew_x3")
+for i in ts:
+    for d in i.__dict__:
+        print d, i.__dict__[d]
+    break

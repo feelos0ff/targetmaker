@@ -22,7 +22,7 @@ rootNode = GetRoot(g)
 def Depth(parent, tree, product):
     if tree == {}:
         k = unicodedata2.normalize('NFD',unicode(product.name )).strip()
-        g.categoriesLink.create(parent, product, {'name': k})
+        g.categoriesLink.create(parent, product, {'label': k})
         
     for key, val in tree.items():
         if key == '': 
@@ -33,12 +33,12 @@ def Depth(parent, tree, product):
         k = unicodedata2.normalize('NFD',unicode(key )).strip()
         category = ''
         
-        if not parent.outE() or not parent.outE(name=k):
+        if not parent.outE() or not parent.outE(k):
             category = g.category.create()  
-            g.categoriesLink.create(parent,category, {'name':k})
+            g.categoriesLink.create(parent,category, {'label':k})
 
         else:
-            category = parent.outE(name=k).outV()             
+            category = parent.outE(k).outV()             
 
         Depth(category, val, product)
     
@@ -59,26 +59,53 @@ def AddProductToGraph(product):
            rec)
 
 def AddUserToGraph(userLogin, searcher):
-    inGraph = g.twitterUser.index.lookup(screen_name=userLogin).next() 
+    inGraph = g.twitterUser.index.lookup(screen_name=userLogin)
     
     if not inGraph:
-        user = TweeUser (searcher.getPerson(userLogin))
-        user = g.twitterUser.create( user )
+        info = searcher.getPersonActions(userLogin)
+        twitts = [stat.text for stat in info]
+        try:
+            userName = info[0].athor.name
+            userLocation = info[0].author.location
+        except Exception as e:
+            print 'add user exc', e
+            userName = ''
+            userLocation = ''
+        user = g.twitterUser.create( name = userName, 
+                                     screen_name=userLogin, 
+                                     data = twitts, 
+                                     location = userLocation
+                                    )
     else:
-        user = inGraph
+        user = searcher.getPerson( inGraph.next().screen_name)
         
     followers = user.followers()
     
     for follower in followers:
-        inGraph = g.twitterUser.index.lookup(screen_name=follower.screen_name).next() 
-        
+        inGraph = g.twitterUser.index.lookup(screen_name=follower.screen_name)
+        # toDo бороться с дублированием кода
+        info = searcher.getPersonActions(follower.screen_name)
+        twitts = [stat.text for stat in info]
+        try:
+            userName = info[0].athor.name
+            userLocation = info[0].author.location
+        except Exception as e:
+            print 'add user exc', e
+            userName = ''
+            userLocation = ''
+            
         if not inGraph:
-            follower = g.twitterUser.create( TweeUser(follower) )
-            g.follow.create(follower,user , {'name' : user.screen_name})
+            follower = g.twitterUser.create( name = userName, 
+                                     screen_name=userLogin, 
+                                     data = twitts, 
+                                     location = userLocation
+                                    )
+            
+            g.follow.create(follower,user , {'label' : user.screen_name})
             
         else:
-            if not inGraph.outE(name=user.screen_name):
-                g.follow.create(follower,user , {'name' : user.screen_name})
+            if not inGraph.next().outE(label=user.screen_name):
+                g.follow.create(follower,user , {'label' : user.screen_name})
             
 
 def ConvertFromSQLToGraph():
@@ -94,18 +121,17 @@ def ConvertFromSQLToGraph():
 
     prof = hotshot.Profile("your_project.prof")
     prof.start()
-    
-    for i in xrange(0,num,shift):
+    '''
+    for i in xrange(0,100,shift):
         goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
         for product in goods:
             AddProductToGraph(product)
-
+    '''
     num = session.query(func.count(Persons.id)).all()[0][0]
     
-    for i in xrange(0,num,shift):
-        user = session.query(Persons).filter(and_(Persons.id < i + shift, Persons.id >= i)).all()
-        for product in goods:
-            AddProductToGraph(product)
+    for i in xrange(0,100,shift):
+        users = session.query(Persons).filter(and_(Persons.id < i + shift, Persons.id >= i)).all()
+        for user in users:
             AddUserToGraph(user.twitterAccount,searcher)
             
     prof.stop()

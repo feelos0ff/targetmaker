@@ -7,7 +7,7 @@ Created on 12 авг. 2014 г.
 from bulbs.rexster import Graph
 from bulbs.config import Config
 from bulbs.model import Node, Relationship
-from bulbs.property import Integer, String, Float
+from bulbs.property import Integer, String, Float,List
 from tweepy.models import User
 
 
@@ -35,16 +35,18 @@ class GraphCategoriesLink(Relationship):
     name = String()
 
 
-class TweeUser(Node, User):
+class TweeUser(Node):
     element_type = 'twitterUser'
-
-    def __init__(self,user):
-        super(User,self).__init__(user)
-
+    name = String()
+    screen_name = String()
+    data = List()
+    location = String()
+    
 
 class Follow(Relationship):
     label= 'follow'
     name = String()
+    
 
 
 def InitGraph():   
@@ -64,11 +66,11 @@ def InitGraph():
 
 
 def GetRoot(g):
-    
-    if not g.categoryRoot.get_all().next():
-        rootNode = g.categoryRoot.create()
-    else:
+
+    try:
         rootNode = g.categoryRoot.get_all().next()
+    except:
+        rootNode = g.categoryRoot.create()
 
     return rootNode
     

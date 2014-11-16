@@ -27,7 +27,7 @@ class LocationParser(object):
                 for key, val in self.exceptionTable.items():
                     address = re.sub(r'(^|\W)'+key+'(\W|$)',val,address)
                     address = re.sub(r'\W',' ',address)
-                print address
+                #print address
                 res = QueryStringQuery(address)
                 res = self.es.search(query =res,indices ="geo-index")
                 
