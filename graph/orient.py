@@ -65,21 +65,21 @@ def AddUserToGraph(userLogin, searcher):
         info = searcher.getPersonActions(userLogin)
         twitts = [stat.text for stat in info]
         try:
-            userName = info[0].athor.name
+            userName = info[0].author.name
             userLocation = info[0].author.location
         except Exception as e:
             print 'add user exc', e
             userName = ''
             userLocation = ''
         user = g.twitterUser.create( name = userName, 
-                                     screen_name=userLogin, 
+                                     screen_name= unicodedata2.normalize('NFD',userName)[0:5000], 
                                      data = twitts, 
-                                     location = userLocation
+                                     location = unicodedata2.normalize('NFD',userLocation)[0:5000]
                                     )
     else:
-        user = searcher.getPerson( inGraph.next().screen_name)
+        user = inGraph.next()
         
-    followers = user.followers()
+    followers = searcher.getPerson( inGraph.next().screen_name).followers()
     
     for follower in followers:
         inGraph = g.twitterUser.index.lookup(screen_name=follower.screen_name)
@@ -87,7 +87,7 @@ def AddUserToGraph(userLogin, searcher):
         info = searcher.getPersonActions(follower.screen_name)
         twitts = [stat.text for stat in info]
         try:
-            userName = info[0].athor.name
+            userName = info[0].author.name
             userLocation = info[0].author.location
         except Exception as e:
             print 'add user exc', e
@@ -95,17 +95,21 @@ def AddUserToGraph(userLogin, searcher):
             userLocation = ''
             
         if not inGraph:
-            follower = g.twitterUser.create( name = userName, 
-                                     screen_name=userLogin, 
+            print userName, userLogin, userLocation
+            try:
+                follower = g.twitterUser.create( name = userName, 
+                                     screen_name= unicodedata2.normalize('NFD',userName)[0:5000], 
                                      data = twitts, 
-                                     location = userLocation
+                                     location = unicodedata2.normalize('NFD',userLocation)[0:5000]
                                     )
-            
-            g.follow.create(follower,user , {'label' : user.screen_name})
+            except Exception as e:
+                print 'asdadsasd', e
+                exit(0)
+            g.follow.create(follower,user , {'name' : user.screen_name})
             
         else:
             if not inGraph.next().outE(label=user.screen_name):
-                g.follow.create(follower,user , {'label' : user.screen_name})
+                g.follow.create(follower,user , {'name' : user.screen_name})
             
 
 def ConvertFromSQLToGraph():
