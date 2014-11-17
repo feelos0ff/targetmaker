@@ -143,7 +143,7 @@ class TwitterSearcher(object):
                 res = self.api.search_users('@'+user)[0]
                 break
             except Exception as e:
-                print 'get person error ', e 
+                print 'get person error ', e, e.response.status
                 self.api=tweepy.API(self.auth.GetAuth())
             
         return res
@@ -156,7 +156,9 @@ class TwitterSearcher(object):
                 res = self.api.user_timeline('@'+user,count = 50)
                 break
             except Exception as e:
-                print 'get person error ', e 
+                if e.response.status == 401:
+                    raise e
+                print 'get person error ', e , e.response.status, user
                 self.api=tweepy.API(self.auth.GetAuth())
             
         return res
@@ -167,7 +169,7 @@ p.location = "Bakersfield, CA"
 p.name = 'Natalia Corres'
 p.nickName = 'tech whisperer, artist, making things happen'
 ts = TwitterSearcher()
-ts = ts.getPersonActions(  "pew_x3")
+ts = ts.getPersonActions(  "ncorres")
 for i in ts:
     for d in i.__dict__:
         print d, i.__dict__[d]

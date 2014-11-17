@@ -9,7 +9,7 @@ import json
 from sqlalchemy.orm.session import sessionmaker
 from buildering.models import engine, Goods, Persons
 import unicodedata2
-from graph import InitGraph,  GetRoot, TweeUser
+from graph import InitGraph,  GetRoot
 from buildering.db import InitDB
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
@@ -18,6 +18,9 @@ import hotshot
 
 g = InitGraph()
 rootNode = GetRoot(g)
+#toDo необходимо запилить этот индекс 
+#vertexIndex = g.client_class.create_vertex_index("")
+
 
 def Depth(parent, tree, product):
     if tree == {}:
@@ -57,59 +60,66 @@ def AddProductToGraph(product):
     Depth( rootNode, 
            json.loads(product.category), 
            rec)
+    
 
-def AddUserToGraph(userLogin, searcher):
+def CreateIfNotFindUser(userLogin, searcher):
     inGraph = g.twitterUser.index.lookup(screen_name=userLogin)
+    user = None
     
     if not inGraph:
-        info = searcher.getPersonActions(userLogin)
+        try:
+            info = searcher.getPersonActions(userLogin)
+        except Exception as e:
+            if e.response.status == 401:
+                return
+            print e
+            
         twitts = [stat.text for stat in info]
+        
+        if len(twitts)< 5:
+            return None
+        
         try:
             userName = info[0].author.name
             userLocation = info[0].author.location
+
         except Exception as e:
             print 'add user exc', e
             userName = ''
             userLocation = ''
+        
         user = g.twitterUser.create( name = userName, 
-                                     screen_name= unicodedata2.normalize('NFD',userName)[0:5000], 
+                                     screen_name= unicodedata2.normalize('NFD',unicode(userLogin))[0:5000], 
                                      data = twitts, 
-                                     location = unicodedata2.normalize('NFD',userLocation)[0:5000]
+                                     location = unicodedata2.normalize('NFD',unicode(userLocation))[0:5000],
+                                     index = 
                                     )
     else:
         user = inGraph.next()
-        
-    followers = searcher.getPerson( inGraph.next().screen_name).followers()
+    
+    return user
+
+
+def CreateIfNotFindFollow(user, follower):
+    inGraph = user.inE(start=follower.eid,limit=1)
+    
+    if (not inGraph) or (inGraph[0].outV() != user):
+        return g.follow.create(user, follower)
+
+    return inGraph[0]
+
+
+def AddUserToGraph(userLogin, searcher):
+    
+    user = CreateIfNotFindUser(userLogin, searcher)  
+    
+    if not user:
+        return
+      
+    followers = searcher.getPerson( user.screen_name).followers()
     
     for follower in followers:
-        inGraph = g.twitterUser.index.lookup(screen_name=follower.screen_name)
-        # toDo бороться с дублированием кода
-        info = searcher.getPersonActions(follower.screen_name)
-        twitts = [stat.text for stat in info]
-        try:
-            userName = info[0].author.name
-            userLocation = info[0].author.location
-        except Exception as e:
-            print 'add user exc', e
-            userName = ''
-            userLocation = ''
-            
-        if not inGraph:
-            print userName, userLogin, userLocation
-            try:
-                follower = g.twitterUser.create( name = userName, 
-                                     screen_name= unicodedata2.normalize('NFD',userName)[0:5000], 
-                                     data = twitts, 
-                                     location = unicodedata2.normalize('NFD',userLocation)[0:5000]
-                                    )
-            except Exception as e:
-                print 'asdadsasd', e
-                exit(0)
-            g.follow.create(follower,user , {'name' : user.screen_name})
-            
-        else:
-            if not inGraph.next().outE(label=user.screen_name):
-                g.follow.create(follower,user , {'name' : user.screen_name})
+        follower = CreateIfNotFindUser(follower.screen_name, searcher)
             
 
 def ConvertFromSQLToGraph():

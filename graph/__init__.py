@@ -14,12 +14,12 @@ from tweepy.models import User
 class GraphGoods(Node):
     element_type = 'goods'
     num = Integer()
-    detail = String()
-    name = String()
+    detail = String(indexed=True)
+    name = String(indexed=True)
     price = Float()
-    description = String()
-    brand = String()
-    url = String()
+    description = String(indexed=True)
+    brand = String(indexed=True)
+    url = String(indexed=True)
       
   
 class GraphCategory(Node):
@@ -32,20 +32,20 @@ class GraphCategoryRoot(Node):
     
 class GraphCategoriesLink(Relationship):
     label= 'categoriesLink'
-    name = String()
+    name = String(indexed=True)
 
 
 class TweeUser(Node):
     element_type = 'twitterUser'
-    name = String()
-    screen_name = String()
-    data = List()
-    location = String()
+    name = String(indexed=True)
+    screen_name = String(indexed=True)
+    data = List(indexed=True)
+    location = String(indexed=True)
     
 
 class Follow(Relationship):
     label= 'follow'
-    name = String()
+    name = String(indexed=True)
     
 
 
