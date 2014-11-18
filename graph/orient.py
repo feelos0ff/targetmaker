@@ -14,13 +14,11 @@ from buildering.db import InitDB
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
 from twitter.request import TwitterSearcher    
-import hotshot
+from pyes import ES
 
 g = InitGraph()
 rootNode = GetRoot(g)
-#toDo необходимо запилить этот индекс 
-#vertexIndex = g.client_class.create_vertex_index("")
-
+es = ES('127.0.0.1:9200')
 
 def Depth(parent, tree, product):
     if tree == {}:
@@ -61,6 +59,15 @@ def AddProductToGraph(product):
            json.loads(product.category), 
            rec)
     
+    
+def CreateIfNotFindFollow(user, follower):
+    inGraph = user.inE(start=follower.eid)
+    
+    if (not inGraph) or (inGraph[0].outV() != user):
+        return g.follow.create(user, follower)
+
+    return inGraph[0]
+
 
 def CreateIfNotFindUser(userLogin, searcher):
     inGraph = g.twitterUser.index.lookup(screen_name=userLogin)
@@ -71,11 +78,11 @@ def CreateIfNotFindUser(userLogin, searcher):
             info = searcher.getPersonActions(userLogin)
         except Exception as e:
             if e.response.status == 401:
-                return
+                return None
             print e
             
         twitts = [stat.text for stat in info]
-        
+        #toDo add inserting twitts into ES
         if len(twitts)< 5:
             return None
         
@@ -91,8 +98,7 @@ def CreateIfNotFindUser(userLogin, searcher):
         user = g.twitterUser.create( name = userName, 
                                      screen_name= unicodedata2.normalize('NFD',unicode(userLogin))[0:5000], 
                                      data = twitts, 
-                                     location = unicodedata2.normalize('NFD',unicode(userLocation))[0:5000],
-                                     index = 
+                                     location = unicodedata2.normalize('NFD',unicode(userLocation))[0:5000]
                                     )
     else:
         user = inGraph.next()
@@ -100,27 +106,22 @@ def CreateIfNotFindUser(userLogin, searcher):
     return user
 
 
-def CreateIfNotFindFollow(user, follower):
-    inGraph = user.inE(start=follower.eid,limit=1)
-    
-    if (not inGraph) or (inGraph[0].outV() != user):
-        return g.follow.create(user, follower)
-
-    return inGraph[0]
-
-
 def AddUserToGraph(userLogin, searcher):
     
     user = CreateIfNotFindUser(userLogin, searcher)  
     
     if not user:
-        return
+        return False
       
-    followers = searcher.getPerson( user.screen_name).followers()
+    followers = searcher.getFollowers(screen_name=user.screen_name)
     
     for follower in followers:
         follower = CreateIfNotFindUser(follower.screen_name, searcher)
-            
+        
+        if follower:
+            CreateIfNotFindFollow(user, follower)
+
+    return True
 
 def ConvertFromSQLToGraph():
     
@@ -133,8 +134,8 @@ def ConvertFromSQLToGraph():
     num = session.query(func.count(Goods.url)).all()[0][0]
     shift = 100
 
-    prof = hotshot.Profile("your_project.prof")
-    prof.start()
+#    prof = hotshot.Profile("your_project.prof")
+ #   prof.start()
     '''
     for i in xrange(0,100,shift):
         goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
@@ -142,13 +143,14 @@ def ConvertFromSQLToGraph():
             AddProductToGraph(product)
     '''
     num = session.query(func.count(Persons.id)).all()[0][0]
-    
-    for i in xrange(0,100,shift):
+
+    for i in xrange(0,num,shift):
         users = session.query(Persons).filter(and_(Persons.id < i + shift, Persons.id >= i)).all()
         for user in users:
             AddUserToGraph(user.twitterAccount,searcher)
+
             
-    prof.stop()
+  #  prof.stop()
     
     
 ConvertFromSQLToGraph()   

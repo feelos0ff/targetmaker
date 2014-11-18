@@ -7,9 +7,9 @@ Created on 18 окт. 2014 г.
 from buildering.db import InitDB
 from buildering.models import engine, Countries, Regions, Cities
 from sqlalchemy.orm.session import sessionmaker
-from sqlalchemy.sql.expression import and_
 import re
-from pyes import *
+from pyes import ES
+
 
 def toElastic():
     es = ES('127.0.0.1:9200')

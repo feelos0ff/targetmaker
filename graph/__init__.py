@@ -9,6 +9,7 @@ from bulbs.config import Config
 from bulbs.model import Node, Relationship
 from bulbs.property import Integer, String, Float,List
 from tweepy.models import User
+from pyes import ES
 
 
 class GraphGoods(Node):
@@ -52,6 +53,22 @@ class Follow(Relationship):
 def InitGraph():   
     c = Config('http://localhost:8182/graphs/orientdbsample')
     g = Graph(config = c)
+
+    mapping = {u'twitt': {'boost': 1.0,
+                          'index': 'analyzed',
+                          'store': 'yes',
+                          'type': u'string',
+                          "term_vector": "with_positions_offsets"},
+               u'key':{'store': 'yes',
+                       'type': u'string',
+                       "term_vector": "with_positions_offsets"} 
+    }
+  
+    es = ES('127.0.0.1:9200')
+    
+    es.indices.create_index("twitter")
+    es.indices.put_mapping("twitts", {'properties': mapping}, "twitter")
+    
     
     g.add_proxy("categoriesLink", GraphCategoriesLink)
     g.add_proxy("categoryRoot",   GraphCategoryRoot)
