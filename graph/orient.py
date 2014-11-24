@@ -10,7 +10,7 @@ from sqlalchemy.orm.session import sessionmaker
 from buildering.models import engine, Goods, Persons
 import unicodedata2
 from graph import InitGraph,  GetRoot
-from buildering.db import InitDB
+from buildering.db import InitDB, GetAll
 from sqlalchemy.sql.expression import and_
 from sqlalchemy import func
 from twitter.request import TwitterSearcher    
@@ -82,7 +82,7 @@ def CreateIfNotFindUser(userLogin, searcher):
             print e
             
         twitts = [stat.text for stat in info]
-        #toDo add inserting twitts into ES
+        
         if len(twitts)< 5:
             return None
         
@@ -107,8 +107,10 @@ def CreateIfNotFindUser(userLogin, searcher):
 
 
 def AddUserToGraph(userLogin, searcher):
-    
-    user = CreateIfNotFindUser(userLogin, searcher)  
+    try:
+        user = CreateIfNotFindUser(userLogin, searcher)  
+    except:
+        return False
     
     if not user:
         return False
@@ -116,11 +118,14 @@ def AddUserToGraph(userLogin, searcher):
     followers = searcher.getFollowers(screen_name=user.screen_name)
     
     for follower in followers:
-        follower = CreateIfNotFindUser(follower.screen_name, searcher)
+        try:
+            follower = CreateIfNotFindUser(follower.screen_name, searcher)
+            
+            if follower:
+                CreateIfNotFindFollow(user, follower)
+        except:
+            pass
         
-        if follower:
-            CreateIfNotFindFollow(user, follower)
-
     return True
 
 def ConvertFromSQLToGraph():
@@ -128,29 +133,14 @@ def ConvertFromSQLToGraph():
     InitDB()
     
     searcher = TwitterSearcher()
-    Session = sessionmaker(bind=engine)
-    session = Session()
     
-    num = session.query(func.count(Goods.url)).all()[0][0]
-    shift = 100
-
-#    prof = hotshot.Profile("your_project.prof")
- #   prof.start()
-    '''
-    for i in xrange(0,100,shift):
-        goods = session.query(Goods).filter(and_(Goods.id < i + shift, Goods.id >= i)).all()
+    for goods in GetAll(Goods):
         for product in goods:
             AddProductToGraph(product)
-    '''
-    num = session.query(func.count(Persons.id)).all()[0][0]
-
-    for i in xrange(0,num,shift):
-        users = session.query(Persons).filter(and_(Persons.id < i + shift, Persons.id >= i)).all()
+    
+    for users in GetAll(Persons):
         for user in users:
             AddUserToGraph(user.twitterAccount,searcher)
 
-            
-  #  prof.stop()
-    
     
 ConvertFromSQLToGraph()   

@@ -6,6 +6,9 @@ Created on 19 сент. 2014 г.
 '''
 import sys
 from sqlalchemy import ForeignKey
+from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.sql.functions import func
+from sqlalchemy.sql.elements import and_
 
 sys.path.insert(0,'/home/feelosoff/workspace/TargetMaker/buildering/')
 sys.path.insert(0,'/home/feelosoff/workspace/TargetMaker/')
@@ -70,10 +73,6 @@ def InitDB():
         Column('name', String())
     )
     
-
-    
-
-    
     mapper(Countries, country, properties={
     'region': relation(Regions, backref='country'),})
     mapper(Regions, region, properties={
@@ -87,3 +86,14 @@ def InitDB():
     mapper(Reviews, reviews)
     
     metadata.create_all(bind=engine)
+
+
+def GetAll(objType, shift = 100):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    
+    num = session.query(func.count(objType.url)).all()[0][0]
+    
+    for i in xrange(0,num,shift):
+        yield session.query(objType).filter(and_(objType.id < i + shift, objType.id >= i)).all()
+    

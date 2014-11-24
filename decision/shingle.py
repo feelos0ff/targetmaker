@@ -13,8 +13,9 @@ class Shingle(object):
         self.minHash  = [[{}]]          # таблица хэшей. хранится помимо позиции еще и вес
         self.countShingles = 0          # количество шинглов
         self.shingleMap = dict()        # словарь соответствия шингла номеру
+        self.docs = []
 
-    def addToShingle(self, data):
+    def addToShingle(self, data, docName):
         dataShingles = dict()
         
         for key, value in data.items:
@@ -27,8 +28,14 @@ class Shingle(object):
                 num = self.shingleMap[key]
             
             dataShingles[num]=value
-            
-        self.shingles.append(dataShingles)
+        
+        if not docName in self.docs:
+            self.shingles.append(dataShingles)
+        
+        else:
+            num = self.docs.index(docName)
+            for key, value in dataShingles.items():
+                self.shingles[num][key] = self.shingles[num].get(key,0) + value
         
     def doMinHashing(self,numReplace):
         cols = len(self.shingles)

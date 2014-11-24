@@ -42,7 +42,9 @@ class TweeUser(Node):
     screen_name = String(indexed=True)
     data = List(indexed=True)
     location = String(indexed=True)
-    
+
+    def getTweets(self):
+        pass
 
 class Follow(Relationship):
     label= 'follow'
@@ -54,8 +56,7 @@ def InitGraph():
     c = Config('http://localhost:8182/graphs/orientdbsample')
     g = Graph(config = c)
 
-    mapping = {u'twitt': {'boost': 1.0,
-                          'index': 'analyzed',
+    mapping = {u'twitt': {'index': 'analyzed',
                           'store': 'yes',
                           'type': u'string',
                           "term_vector": "with_positions_offsets"},
