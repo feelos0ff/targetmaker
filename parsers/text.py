@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 24 нояб. 2014 г.
 
@@ -12,7 +13,7 @@ class TextProcess(object):
     classdocs
     '''
     
-    def __init__(self, params):
+    def __init__(self):
         pass
     
     def processing(self,text, ngramm = 1):
@@ -21,8 +22,8 @@ class TextProcess(object):
         stemmer= nltk.PorterStemmer()
         
         text =nltk.tokenize.wordpunct_tokenize(text)
-        nltk.ngrams(text,ngramm) 
-        text = [stemmer.stem(word) for word in text if not stemmer.stem(word) in stops]
+        text = [stemmer.stem(word) for word in text if (not stemmer.stem(word) in stops) and (word.isalpha()) and (not word in stops)]
+        text = nltk.ngrams(text,ngramm) 
     
         return nltk.Text(text).vocab()
     

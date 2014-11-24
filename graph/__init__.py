@@ -44,7 +44,14 @@ class TweeUser(Node):
     location = String(indexed=True)
 
     def getTweets(self):
-        pass
+        es = ES('127.0.0.1:9200')
+        res = []
+        
+        for tweetID in self.data:
+            print tweetID
+            res += es.get('twitter','twitts' , tweetID)['twitt']
+
+        return res
 
 class Follow(Relationship):
     label= 'follow'
@@ -67,9 +74,11 @@ def InitGraph():
   
     es = ES('127.0.0.1:9200')
     
-    es.indices.create_index("twitter")
-    es.indices.put_mapping("twitts", {'properties': mapping}, "twitter")
-    
+    try:
+        es.indices.create_index("twitter")
+        es.indices.put_mapping("twitts", {'properties': mapping}, "twitter")
+    except:
+        pass
     
     g.add_proxy("categoriesLink", GraphCategoriesLink)
     g.add_proxy("categoryRoot",   GraphCategoryRoot)

@@ -92,7 +92,7 @@ def GetAll(objType, shift = 100):
     Session = sessionmaker(bind=engine)
     session = Session()
     
-    num = session.query(func.count(objType.url)).all()[0][0]
+    num = session.query(func.count(objType.id)).all()[0][0]
     
     for i in xrange(0,num,shift):
         yield session.query(objType).filter(and_(objType.id < i + shift, objType.id >= i)).all()

@@ -81,7 +81,8 @@ def CreateIfNotFindUser(userLogin, searcher):
                 return None
             print e
             
-        twitts = [stat.text for stat in info]
+        twitts = [es.index({'twitt' :stat.text , 'key' : userLogin},"twitter", "twitts")['_id']
+                    for stat in info]
         
         if len(twitts)< 5:
             return None
@@ -142,5 +143,6 @@ def ConvertFromSQLToGraph():
         for user in users:
             AddUserToGraph(user.twitterAccount,searcher)
 
-    
-ConvertFromSQLToGraph()   
+
+if __name__ == 'main':    
+    ConvertFromSQLToGraph()   

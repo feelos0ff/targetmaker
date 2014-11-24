@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 23 нояб. 2014 г.
 
@@ -8,9 +9,9 @@ import random
 class Shingle(object):
     
     def __init__(self):
-        self.shingles = [dict()]        # таблица шинглов хранятся в дикте тольк ненулевые значения
-        self.replaces = [[]]            # таблица перестановок
-        self.minHash  = [[{}]]          # таблица хэшей. хранится помимо позиции еще и вес
+        self.shingles = []        # таблица шинглов хранятся в дикте тольк ненулевые значения
+        self.replaces = []            # таблица перестановок
+        self.minHash  = []          # таблица хэшей. хранится помимо позиции еще и вес
         self.countShingles = 0          # количество шинглов
         self.shingleMap = dict()        # словарь соответствия шингла номеру
         self.docs = []
@@ -18,7 +19,7 @@ class Shingle(object):
     def addToShingle(self, data, docName):
         dataShingles = dict()
         
-        for key, value in data.items:
+        for key, value in data.items():
             num = self.countShingles
 
             if self.shingleMap.get(key,-1) == -1:
@@ -40,29 +41,39 @@ class Shingle(object):
     def doMinHashing(self,numReplace):
         cols = len(self.shingles)
         
-        self.replaces = [[]]          
-        self.minHash  = [[{}]]          
-        self.shingleMap = dict()        
+        numReplace = min(numReplace, self.countShingles)
         
+        self.replaces = []          
+        self.minHash  = []          
+        self.shingleMap = dict()        
+
         for i in xrange(numReplace):
             
             seq = range(self.countShingles)
             random.shuffle(seq)
             self.replaces.append(seq)
-            seq = []
-                        
+            
+            print len(seq)
+            print len(self.replaces)
+            
+            hashVal = []
+            
             for j in xrange(cols):
                 for k in xrange(self.countShingles):
-                    pos = self.replaces[i][k]
-                    value = self.shingles[j].get(pos, 0)
+                    try:
+                        pos = self.replaces[i][k]
+                    except:
+                        print i, k
+                        return
                     
+                    value = self.shingles[j].get(pos, 0)
                     if value == 0:
                         continue
                     
-                    seq.append( {'pos':k,'value':value} )
+                    hashVal.append( {'pos':k,'value':value} )
                     break
-            
-            self.minHash.append(seq)
+
+            self.minHash.append(hashVal)
         
             
     def getMinHash(self,data):
