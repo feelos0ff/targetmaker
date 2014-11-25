@@ -9,11 +9,11 @@ import random
 class Shingle(object):
     
     def __init__(self):
-        self.shingles = []        # таблица шинглов хранятся в дикте тольк ненулевые значения
+        self.shingles = []            # таблица шинглов хранятся в дикте тольк ненулевые значения
         self.replaces = []            # таблица перестановок
-        self.minHash  = []          # таблица хэшей. хранится помимо позиции еще и вес
-        self.countShingles = 0          # количество шинглов
-        self.shingleMap = dict()        # словарь соответствия шингла номеру
+        self.minHash  = []            # таблица хэшей. хранится помимо позиции еще и вес
+        self.countShingles = 0        # количество шинглов
+        self.shingleMap = dict()      # словарь соответствия шингла номеру
         self.docs = []
 
     def addToShingle(self, data, docName):
@@ -32,7 +32,7 @@ class Shingle(object):
         
         if not docName in self.docs:
             self.shingles.append(dataShingles)
-        
+            self.docs.append(docName)
         else:
             num = self.docs.index(docName)
             for key, value in dataShingles.items():
@@ -44,8 +44,7 @@ class Shingle(object):
         numReplace = min(numReplace, self.countShingles)
         
         self.replaces = []          
-        self.minHash  = []          
-        self.shingleMap = dict()        
+        self.minHash  = []                 
 
         for i in xrange(numReplace):
             
@@ -74,12 +73,13 @@ class Shingle(object):
                     break
 
             self.minHash.append(hashVal)
-        
-            
-    def getMinHash(self,data):
+        self.minHash = zip(*self.minHash)
+
+    def getMinHash(self,model):
         data = { self.shingleMap[key]:value  
-                    for key, value in data.items() 
+                    for key, value in model.items() 
                         if self.shingleMap.get(key,-1) != -1 }
+                
         res = []
         
         for replace in self.replaces:

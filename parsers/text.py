@@ -21,7 +21,7 @@ class TextProcess(object):
         stops = stopwords.words('english')
         stemmer= nltk.PorterStemmer()
         
-        text =nltk.tokenize.wordpunct_tokenize(text)
+        text =nltk.tokenize.wordpunct_tokenize(text.lower())
         text = [stemmer.stem(word) for word in text if (not stemmer.stem(word) in stops) and (word.isalpha()) and (not word in stops)]
         text = nltk.ngrams(text,ngramm) 
     
