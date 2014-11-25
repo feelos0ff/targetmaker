@@ -27,41 +27,48 @@ class Decision(object):
         for goods in GetAll(Goods):
             for product in goods:
                 for i in xrange(1,3):
-                    for key in ['category', 'detail', 'name', 'brand', 'description']:
+                    for key in ['category', 'name', 'brand','description']:
                         self.shingles.addToShingle(
                             TextProcess().processing(
                                 product.__dict__[key], i), product.id)
             num += 100
-            if num > 1000:
+            if num > 250:
                 break
             print num
              
-        self.shingles.doMinHashing(8)
+        self.shingles.doMinHashing(50)
     
-    def scalarM(self,v1,v2):
-        count = min(len(v1), len(v2))
-        return sum(v1[i]['value']*v2[i]['value'] for i in xrange(count) if v1[i]['pos'] == v2[i]['pos'])
     
     def makeDecision(self,user): 
         tweets = ''
+        scalarM = lambda v1, v2:  sum(v1[i]['value']*v2[i]['value'] 
+                                      for i in xrange(min(len(v1), len(v2))) 
+                                          if v1[i]['pos'] == v2[i]['pos'])
+
         for tweet in user.getTweets():
             tweets += tweet
+        
         model = {}
         
         for i in xrange(1,3):
-            model = dict( TextProcess().processing(tweets, i).items() + model.items() )
+            model = dict( TextProcess().processing(tweets, i, True).items() + model.items() )
         
         userShingles =self.shingles.getMinHash(model)
         
-        userLen = self.scalarM(userShingles, userShingles)
+
         
-        scalar= [self.scalarM(v, userShingles)/math.sqrt(userLen * self.scalarM(v, v)) for v in self.shingles.minHash]    
+        userLen = scalarM(userShingles, userShingles)
+        
+        scalar= [scalarM(v, userShingles)/math.sqrt(userLen * scalarM(v, v)) for v in self.shingles.minHash]    
         #print scalar
         res = scalar.index( max(scalar) )
-        print res, scalar[res], self.shingles.docs[res]
-        print userShingles
+        print res, scalar[res], self.shingles.docs[res], len(userShingles)
 
+        for i in xrange(len(userShingles)):
+            if userShingles[i]['pos'] == self.shingles.minHash[res][i]['pos']:
+                print self.shingles.enShingleMap[userShingles[i]['pos']], userShingles[i], self.shingles.minHash[res][i]
+        
 d = Decision()
-d.makeDecision(CreateIfNotFindUser('Ncorres',TwitterSearcher()))     
+d.makeDecision(CreateIfNotFindUser('Kadiki_',TwitterSearcher()))     
         
         

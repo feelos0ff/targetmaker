@@ -82,7 +82,7 @@ class TwitterSearcher(object):
         res = None
         for i in xrange(5* len(self.auth.access_key)):
             try:
-                res = self.api.user_timeline('@'+user,count = 50)
+                res = self.api.user_timeline('@'+user,count = 150)
                 break
             except Exception as e:
                 if e.response.status == 401:

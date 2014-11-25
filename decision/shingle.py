@@ -15,6 +15,7 @@ class Shingle(object):
         self.countShingles = 0        # количество шинглов
         self.shingleMap = dict()      # словарь соответствия шингла номеру
         self.docs = []
+        self.enShingleMap = dict()
 
     def addToShingle(self, data, docName):
         dataShingles = dict()
@@ -25,6 +26,7 @@ class Shingle(object):
             if self.shingleMap.get(key,-1) == -1:
                 self.shingleMap[key] = num
                 self.countShingles += 1
+                self.enShingleMap[num] = key
             else:
                 num = self.shingleMap[key]
             

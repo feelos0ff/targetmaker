@@ -134,15 +134,15 @@ def ConvertFromSQLToGraph():
     InitDB()
     
     searcher = TwitterSearcher()
-    
+    '''
     for goods in GetAll(Goods):
         for product in goods:
             AddProductToGraph(product)
-    
+    '''
     for users in GetAll(Persons):
         for user in users:
             AddUserToGraph(user.twitterAccount,searcher)
 
 
-if __name__ == 'main':    
-    ConvertFromSQLToGraph()   
+   
+#ConvertFromSQLToGraph()   
