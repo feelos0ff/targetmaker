@@ -14,6 +14,7 @@ from parsers.text import TextProcess
 from graph.orient import CreateIfNotFindUser
 from twitter.request import TwitterSearcher    
 import math
+from pyes import ES
 
 class Decision(object):
     '''
@@ -25,21 +26,41 @@ class Decision(object):
         '''
         self.shingles = Shingle()
         InitDB()
-        num = 0
+        '''
+        mapping = {u'country_code': {'boost': 1.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+                u'country_name': {'boost': 1.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+                u'region_code': {'boost': 5.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+                u'region_name': {'boost': 5.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+                u'city_name': {'boost': 1.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+        }
+      
+        es = ES('127.0.0.1:9200')
+        es.indices.create_index("geo-index")
+        es.indices.put_mapping("geo", {'properties': mapping}, "geo-index")
+    
         for goods in GetAll(Goods):
             for product in goods:
-                for i in xrange(1,3):
-                    for key in ['category', 'name', 'brand', 'detail', 'description']:
-                        self.shingles.addToShingle(
-                            TextProcess().processing(
-                                product.__dict__[key], i), product.id)
-
-            num += 100
-            if num > 2500:
-                break
-            print num
-             
-        self.shingles.doMinHashing(100)
+        '''       
     
     
     def makeDecision(self,user): 
