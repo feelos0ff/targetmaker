@@ -4,77 +4,100 @@ Created on 12 авг. 2014 г.
 
 @author: feelosoff
 '''
-
-import pyorient
-from buildering.db import init_db
-from buildering.models import Goods, engine
-from sqlalchemy.orm.session import sessionmaker
-import json
-from numpy import prod
-
-
-init_db()
-
-client = pyorient.OrientDB("localhost", 2424)
-session_id = client.connect( "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
+from bulbs.rexster import Graph
+from bulbs.config import Config
+from bulbs.model import Node, Relationship
+from bulbs.property import Integer, String, Float,List
+from tweepy.models import User
+from pyes import ES
 
 
-if not client.db_exists( 'tweezon', pyorient.STORAGE_TYPE_PLOCAL ):
-    client.db_create('tweezon', pyorient.DB_TYPE_GRAPH, pyorient.STORAGE_TYPE_PLOCAL )
-    tx = client.tx_commit()
-    tx.begin()
-    client.command( "create class Goods extends V" )
-    client.command( "create class Categories extends V" )
-    client.command( "create class CategoriesLink extends E" )
-    tx.commit()
-else:
-    client.db_open( 'tweezon', "root", "E8132024602821D045CBD3024FF7747A81FF36B19D111D9C24FA9076EFF86E94" )
+class GraphGoods(Node):
+    element_type = 'goods'
+    num = Integer()
+    detail = String(indexed=True)
+    name = String(indexed=True)
+    price = Float()
+    description = String(indexed=True)
+    brand = String(indexed=True)
+    url = String(indexed=True)
+      
+  
+class GraphCategory(Node):
+    element_type = 'category'
 
-clusters = client.db_reload()
-clusters = {obj['name'] :obj for obj in clusters}
-
-tx = client.tx_commit()
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
-def Depth(parent, tree, product):
-    # toDo: добавить запись товара 
-    if tree.empty():
-        if parent:
-            client.command( "create edge CategoriesLink from "+ parent.rid + " to "+product.rid )
     
-    for key, value in tree:
-        id = client.command( "create vertex Categories set value = "+ key )[0]
-        if parent:
-            client.command( "create edge CategoriesLink from "+ parent.rid + " to "+id.rid )
+class GraphCategoryRoot(Node):
+    element_type = 'categoryRoot'
+
+    
+class GraphCategoriesLink(Relationship):
+    label= 'categoriesLink'
+    name = String(indexed=True)
+
+
+class TweeUser(Node):
+    element_type = 'twitterUser'
+    name = String(indexed=True)
+    screen_name = String(indexed=True)
+    data = List(indexed=True)
+    location = String(indexed=True)
+
+    def getTweets(self):
+        es = ES('127.0.0.1:9200')
+        res = []
         
-        Depth(id, value)
-            
-            
-            
-a = client.command( "create vertex Categories set value = 'azaza'")
+        for tweetID in self.data:
+            print tweetID
+            res += [es.get('twitter','twitts' , tweetID)['twitt']]
 
-tx.begin()
-goods = session.query(Goods).all()
+        return res
 
-for product in goods:
-    rec = {'@goods':{'id' : product.id, 
-                     'detail': product.detail, 
-                     'name': product.name, 
-                     'price':product.price, 
-                     'description':product.description,
-                     'brand':product.brand,
-                     'url':product.url } }
-
-    Depth(None, json.loads(product.category), client.record_create('goods', rec))
+class Follow(Relationship):
+    label= 'follow'
+    name = String(indexed=True)
     
-res = tx.commit()
 
-'''
- id | category | detail | name | price | description | brand | url 
-----------+--------------------------------------------------------------------------------
-  1 | {" Home & Kitchen ": {}} |  Levolor 14062 Window Hardware Brass| Levolor Curtain Rod Center Support Bracket 3-1/2" Projection Chrome |     0 |  14062 Features: -Product Type:Chain And Hooks. Dimensions: -Overall Height - Top to Botto
-m:0.25 -Overall Width - Side to Side:3.25 -Overall Depth - Front to Back:7 -Overall Product Weight:0.06                                                                                                                                                                                                                                                    | Levolor              
-           | http://www.amazon.com/Levolor-Curtain-Support-Bracket-Projection/dp/B000M3THTU
-'''
+
+def InitGraph():   
+    c = Config('http://localhost:8182/graphs/orientdbsample')
+    g = Graph(config = c)
+
+    mapping = {u'twitt': {'index': 'analyzed',
+                          'store': 'yes',
+                          'type': u'string',
+                          "term_vector": "with_positions_offsets"},
+               u'key':{'store': 'yes',
+                       'type': u'string',
+                       "term_vector": "with_positions_offsets"} 
+    }
+  
+    es = ES('127.0.0.1:9200')
+    
+    try:
+        es.indices.create_index("twitter")
+        es.indices.put_mapping("twitts", {'properties': mapping}, "twitter")
+    except:
+        pass
+    
+    g.add_proxy("categoriesLink", GraphCategoriesLink)
+    g.add_proxy("categoryRoot",   GraphCategoryRoot)
+    
+    g.add_proxy("twitterUser", TweeUser)
+    g.add_proxy("category",    GraphCategory) 
+ 
+    g.add_proxy("follow", Follow)
+    g.add_proxy("goods",  GraphGoods)
+
+    return g
+
+
+def GetRoot(g):
+
+    try:
+        rootNode = g.categoryRoot.get_all().next()
+    except:
+        rootNode = g.categoryRoot.create()
+
+    return rootNode
+    
