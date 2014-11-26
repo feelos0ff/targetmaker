@@ -60,18 +60,12 @@ class Shingle(object):
             hashVal = []
             
             for j in xrange(cols):
-                for k in xrange(self.countShingles):
-                    try:
-                        pos = self.replaces[i][k]
-                    except:
-                        print i, k
-                        return
-                    
+                for pos in self.replaces[-1]:                    
                     value = self.shingles[j].get(pos, 0)
                     if value == 0:
                         continue
                     
-                    hashVal.append( {'pos':k,'value':value} )
+                    hashVal.append( {'pos':pos,'value':value} )
                     break
 
             self.minHash.append(hashVal)
@@ -81,17 +75,17 @@ class Shingle(object):
         data = { self.shingleMap[key]:value  
                     for key, value in model.items() 
                         if self.shingleMap.get(key,-1) != -1 }
-                
+        print len(data)
         res = []
         
         for replace in self.replaces:
-            for i in xrange(self.countShingles):
-                value = data.get(replace[i], 0)
+            for pos in replace:
+                value = data.get(pos, 0)
                 
                 if value == 0:
                     continue
                 
-                res.append({'pos':i,'value':value})
+                res.append({'pos':pos,'value':value})
                 break
         
         return res

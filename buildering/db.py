@@ -96,4 +96,9 @@ def GetAll(objType, shift = 100):
     
     for i in xrange(0,num,shift):
         yield session.query(objType).filter(and_(objType.id < i + shift, objType.id >= i)).all()
-    
+
+def GetNum(objType,num):
+    Session = sessionmaker(bind=engine)
+    session = Session()    
+    print num, objType
+    return session.query(objType).filter(objType.id  == num).all()[0]

@@ -49,7 +49,7 @@ class TweeUser(Node):
         
         for tweetID in self.data:
             print tweetID
-            res += es.get('twitter','twitts' , tweetID)['twitt']
+            res += [es.get('twitter','twitts' , tweetID)['twitt']]
 
         return res
 

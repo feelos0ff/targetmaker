@@ -22,25 +22,28 @@ class TextProcess(object):
         stemmer= nltk.PorterStemmer()
         
         text = nltk.tokenize.wordpunct_tokenize(text.lower())
+        '''
         for word in text:
-            if wordnet.wordnet.morphy(word) == 'cooking':
-                print word
+            if wordnet.wordnet.morphy(word) == 'chrome':
+                print text
+        '''
         normalizing = (lambda w: wordnet.wordnet.morphy(w) if wordnet.wordnet.morphy(w) else stemmer.stem(w))
         
         text = [normalizing(word)
                 for word in text 
                     if isinstance(word, unicode) and
                         (not wordnet.wordnet.morphy(word) in stops) 
-                        and (word.isalpha()) 
+                     #   and (word.isalpha()) 
                         and (not word in stops)]
         
         if syns and ngramm == 1:
             try:
                 res = []
                 for word in text:
-                    syn = wordnet.wordnet.synsets(word)[0]
-                    res += list(set(syn.lemma_names()))
-                text = res
+                    syn = wordnet.wordnet.synsets(word)
+                    for w in syn:
+                        res += w.lemma_names()
+                text = list(set(res))
             except:
                 pass
             
@@ -49,8 +52,8 @@ class TextProcess(object):
                         if isinstance(word, unicode) and
                             (not wordnet.wordnet.morphy(word) in stops)  
                             and (not word in stops)]
-            print text
-        
+           # print text
+        text = [stemmer.stem(w) for w in text if w.isalpha()]
         text = nltk.ngrams(text,ngramm) 
     
         return nltk.Text(text).vocab()
