@@ -31,7 +31,7 @@ class TextProcess(object):
         text = [word
                 for word in text 
                     if (not word in stops) and word.isalpha()]
-        return ' '.join(text)
+        return text#' '.join(text)
         '''
         normalizing = (lambda w: wordnet.wordnet.morphy(w) if wordnet.wordnet.morphy(w) else stemmer.stem(w))
         

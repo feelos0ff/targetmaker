@@ -5,8 +5,11 @@ Created on 23 нояб. 2014 г.
 @author: feelosoff
 '''
 import sys
-from pyes.query import QueryStringQuery
+from pyes.query import QueryStringQuery, Search
 import unicodedata2
+from pyes.highlight import HighLighter
+import json
+
 sys.path.insert(0,'/home/priora/workspace/targetmaker/')
 
 from decision.shingle import Shingle
@@ -15,7 +18,7 @@ from buildering.db import InitDB, GetAll, GetNum
 from parsers.text import TextProcess
 from graph.orient import CreateIfNotFindUser
 from twitter.request import TwitterSearcher    
-import math
+import re
 from pyes import ES
 
 class Decision(object):
@@ -48,11 +51,18 @@ class Decision(object):
             tweet = TextProcess().processing(tweet)
             if not tweet:
                 continue
-            query = QueryStringQuery(tweet)
-            print tweet.encode('utf-8')
-            targets += es.search(query, "tweezon","tweets")
-        for taget in targets:
-            print taget
+            for t in tweet:
+                query = Search( QueryStringQuery(t), highlight=HighLighter(['<<<'],['>>>']))
+                query.add_highlight(t)
+                #print t
+                res= es.search(query, "tweezon","tweets")
+                
+                if res:
+                    targets += res[0]
+                    print res[0]._meta.highlight
+                   # print re.findall(r'<<<.*>>>',json.dumps(res[0]))
+            
+
 d = Decision()
 d.makeDecision(CreateIfNotFindUser('Kadiki_',TwitterSearcher()))     
         
