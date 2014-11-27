@@ -125,7 +125,7 @@ def ProcessProductReview(idReviews):
     rootSpider   = Spider('', '')
     
     reviewProductParser = ReviewProductParser()
-#    точка предыдущей остановки
+#   точка предыдущей остановки
     idxStart =705# idReviews.index('B006K2ZZ7K')
     
     print (idxStart, len(idReviews))

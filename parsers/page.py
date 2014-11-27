@@ -7,7 +7,7 @@ Created on 30 авг. 2014 г.
 import re
 from buildering.models import Persons, Reviews, Goods
 from datetime import datetime
-from spiderStand.spider import Spider
+
 
 
 class ReviewProductParser(object):
@@ -92,7 +92,6 @@ class ReviewPersonParser(object):
             review.title = title[i]
     
             review.stars = 0.0
-          # print datePub[i]
             review.date_review = datetime.strptime( datePub[i], '%B %d, %Y')
                         
             res.append(review)

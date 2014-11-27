@@ -27,9 +27,8 @@ class LocationParser(object):
                 for key, val in self.exceptionTable.items():
                     address = re.sub(r'(^|\W)'+key+'(\W|$)',val,address)
                     address = re.sub(r'\W',' ',address)
-                #print address
                 res = QueryStringQuery(address)
-                res = self.es.search(query =res,indices ="geo-index")
+                res = self.es.search(query =res,indices ="tweezon",doc_types="tweets")
                 
                 return res[0]
             except:

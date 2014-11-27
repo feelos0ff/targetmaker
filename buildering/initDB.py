@@ -11,21 +11,15 @@ import re
 from pyes import ES
 
 
-def toElastic():
-    es = ES('127.0.0.1:9200')
-    rsc = open('../rsc/locations.csv')
-    i = 0
-    for line in rsc:
-        res = es.index(index="test-index", doc_type='tweet', id=i,body={'geo':line})
-        i += 1
-        print(res['created'])
-
-
 if __name__ == '__main__':
     InitDB()
     
     Session = sessionmaker(bind=engine)
     session = Session()
+    
+    es = ES('127.0.0.1:9200')
+    es.indices.create_index("tweezon")
+    
     mapping = {u'country_code': {'boost': 1.0,
                                 'index': 'analyzed',
                                 'store': 'yes',
@@ -52,10 +46,42 @@ if __name__ == '__main__':
                                 'type': u'string',
                                 "term_vector": "with_positions_offsets"},
     }
-  
-    es = ES('127.0.0.1:9200')
-    es.indices.create_index("geo-index")
-    es.indices.put_mapping("geo", {'properties': mapping}, "geo-index")
+    es.indices.put_mapping("geo", {'properties': mapping}, "tweezon")
+    
+    mapping = {u'name': {'boost': 5.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+                u'detail': {'boost': 1.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+               
+                u'description': {'boost': 5.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+                u'brand': {'boost': 5.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+                u'url': {'boost': 2.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+                u'category': {'boost': 4.0,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},
+        }
+    
+    es.indices.put_mapping("tweets", {'properties': mapping}, "tweezon")
     
     geo = open('../rsc/locations.csv')
     num = 0
@@ -80,7 +106,7 @@ if __name__ == '__main__':
         city.name    = line[6]
         
         res = es.index({'country_code' : country.code, 'country_name' : country.name,
-                        'region_code' : region.code, 'region_name' : region.name, 'city_name':line[6]},"geo-index", "geo", num)
+                        'region_code' : region.code, 'region_name' : region.name, 'city_name':line[6]},"tweezon", "geo", num)
         
         print res
   

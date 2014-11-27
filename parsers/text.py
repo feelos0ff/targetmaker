@@ -7,25 +7,31 @@ Created on 24 нояб. 2014 г.
 import nltk
 from nltk.corpus import stopwords
 from nltk import wordnet 
-
+import re
 class TextProcess(object):
     '''
     classdocs
     '''
     
     def __init__(self):
-        pass
+        self.pattern = re.compile(r"https?\S*")
+        #(r"""~^(?:(?:https?|ftp|telnet)://(?:[a-z0-9_-]{1,32}(?::[a-z0-9_-]{1,32})?@)?)?(?:(?:[a-z0-9-]{1,128}\.)+(?:ru|su|com|net|org|mil|edu|arpa|gov|biz|info|aero|inc|name|[a-z]{2})|(?!0)(?:(?!0[^.]|255)[0-9]{1,3}\.){3}(?!0|255)[0-9]{1,3})(?:/[a-z0-9.,_@%&?+=\~/-]*)?(?:#[^ '\"&]*)?$~i""")
+
     
     def processing(self,text, ngramm = 1, syns = False):
         
         stops = stopwords.words('english')
-        stemmer= nltk.PorterStemmer()
-        
+        #print text
+        try:
+            text = self.pattern.sub(' ',text) 
+        except Exception as e:
+            print e
+        #print text
         text = nltk.tokenize.wordpunct_tokenize(text.lower())
-        '''
-        for word in text:
-            if wordnet.wordnet.morphy(word) == 'chrome':
-                print text
+        text = [word
+                for word in text 
+                    if (not word in stops) and word.isalpha()]
+        return ' '.join(text)
         '''
         normalizing = (lambda w: wordnet.wordnet.morphy(w) if wordnet.wordnet.morphy(w) else stemmer.stem(w))
         
@@ -57,4 +63,4 @@ class TextProcess(object):
         text = nltk.ngrams(text,ngramm) 
     
         return nltk.Text(text).vocab()
-       
+        '''
