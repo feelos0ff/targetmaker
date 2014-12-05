@@ -9,6 +9,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.engine import create_engine
 import json
 from sqlalchemy.sql.expression import and_
+import re
 
 
 engine = create_engine('postgresql+psycopg2://postgres:password@localhost/tweezon')
@@ -81,7 +82,17 @@ class Goods(object):
         return self.category
 
     def getInfo(self):
-        pass
+        res = "id:" + str(self.id)
+        res += ",name:'" + self.name 
+        
+       # res += "',detail:'" +  re.sub(r'\W',' ',self.detail)
+       # res += "',description:'" +re.sub(r'\W',' ', self.description)
+       # res += "',brand:'" + re.sub(r'\W',' ', self.brand)
+        #res += "',url:'" + self.url
+        
+        res = '{' + res + "'}"
+
+        return res.encode('utf-8').capitalize()
 
 class Reviews(object):
     '''

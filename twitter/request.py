@@ -14,6 +14,7 @@ from math import log
 from twitter.oAuth import TwitterAuth
 
 
+
 class TwitterSearcher(object):
     '''
     classdocs
@@ -21,16 +22,7 @@ class TwitterSearcher(object):
     def __init__(self):
         self.locParse = LocationParser()
         self.es = ES('127.0.0.1:9200')
-        '''
-        consumer_key = "mD68Xtt994xZPSQ7a6DuiyHmQ"
-        consumer_secret = "FboATUEDCPOJLGNze0AryhEaFKqhRATEq8d9iPlZfVBOujDvqC"
-        
-        access_key="2692494289-7GJj6F2CdvmBtiZvcMV7YVxp3sQnDm7F62ymV0c"
-        access_secret="ZjTgcHV8LuEIdbMU8KJxCw7kIJjtm5gU7VjwPlZWsEEaj"
-       
-        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-        auth.set_access_token(access_key, access_secret)
-        '''
+
         self.auth = TwitterAuth()
         self.api=tweepy.API(self.auth.GetAuth())
         
@@ -74,6 +66,63 @@ class TwitterSearcher(object):
         
         return distance / 2
     
+    def getPerson(self,user):
+        res = None
+        for i in xrange(5* len(self.auth.access_key)):
+            try:
+                res = self.api.search_users('@'+user)[0]
+            except Exception as e:
+                print 'get person error ', e, e.response.status
+                self.api=tweepy.API(self.auth.GetAuth())
+            else:
+                break
+        return res
+    
+    def getPersonActions(self, user):
+        res = None
+        for i in xrange(5* len(self.auth.access_key)):
+            try:
+                res = self.api.user_timeline('@'+user,count = 150)
+                break
+            except Exception as e:
+                if e.response.status == 401:
+                    raise e
+                print 'get person error ', e , e.response.status, user
+                self.api=tweepy.API(self.auth.GetAuth())
+            
+        return res
+    
+    def getFollowers(self, **kwds):
+        """ params: 
+        user
+        screen_name 
+        """
+        user = kwds.get('user',None)
+        screen_name = kwds.get('screen_name','')
+        follow = []
+        
+        if not user and not screen_name:
+            raise Exception()
+        
+        if not user and screen_name:
+            user = self.getPerson(screen_name)
+            
+        while True:
+            try:
+                follow = user.followers()
+                break
+            except Exception as e:
+                print 'twitter error ', e
+                
+                if e.response.status  != 88 and e.response.status != 131 and  e.response.status != 429:
+                    print e.response.status
+                    raise e 
+                
+                self.api=tweepy.API(self.auth.GetAuth())
+                user = self.getPerson(screen_name)
+
+        return follow
+        
     def getSameUser(self, person):
         while True:
             try:
@@ -81,11 +130,9 @@ class TwitterSearcher(object):
                 break
             except Exception as e:
                 print 'twitter error ', e
-                if e.response.status  != 88 or e.response.status != 131:
+                if e.response.status  != 88 and e.response.status != 131 and e.response.status != 429:
                     raise e 
-                self.api=tweepy.API(self.auth.GetAuth())
-                continue
-        
+                self.api=tweepy.API(self.auth.GetAuth())        
         
         count = len(users)
         rankedUsers = []
@@ -107,19 +154,17 @@ class TwitterSearcher(object):
         rankedUsers.sort(key= lambda el: -el[1] -  el[2] - el[3])
        
         for usr in rankedUsers:
-            badUsr = False
-         #   print usr[1:], usr[0].screen_name, usr[0].description
-            
+            badUsr = False            
             while True:
                 try:
-                    if len(usr[0].followers()) < 5:
+                    if len(self.getFollowers(user= usr[0])) < 5:
                         badUsr = True
                         break
                 
                 except Exception as e:
                     print 'access twitter err', e
                     
-                    if e.response.status != 88 or e.response.status != 131:
+                    if e.response.status != 88 and e.response.status != 131 and  e.response.status != 429:
                         badUsr = True
                         break
                     
@@ -136,12 +181,18 @@ class TwitterSearcher(object):
             return usr[0].screen_name
 
         return None
+    
+    
 '''
 p = Persons()
 p.name = "dll pa"
-#p.location = "Bakersfield, CA"
-#p.name = 'Natalia Corres'
-#p.nickName = 'tech whisperer, artist, making things happen'
+p.location = "Bakersfield, CA"
+p.name = 'Natalia Corres'
+p.nickName = 'tech whisperer, artist, making things happen'
 ts = TwitterSearcher()
-print ts.getSameUser(p)
+ts = ts.getPersonActions(  "ncorres")
+for i in ts:
+    for d in i.__dict__:
+        print d, i.__dict__[d]
+    break
 '''
