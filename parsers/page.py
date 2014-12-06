@@ -11,6 +11,7 @@ from spiderStand import spider
 from spiderStand.spider import Spider
 
 
+
 class ReviewProductParser(object):
 
     def __init__(self):
