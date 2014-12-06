@@ -20,7 +20,7 @@ from parsers.page import ReviewProductParser, ReviewPersonParser, GoodsParser
 
 from buildering.models import  engine, Persons, Goods
 from sqlalchemy.orm import sessionmaker
-from db import init_db
+from db import InitDB
 from sqlalchemy import and_
 
 
@@ -125,7 +125,7 @@ def ProcessProductReview(idReviews):
     rootSpider   = Spider('', '')
     
     reviewProductParser = ReviewProductParser()
-#    точка предыдущей остановки
+#   точка предыдущей остановки
     idxStart =793# idReviews.index('B006K2ZZ7K')
     
     print (idxStart, len(idReviews))
@@ -156,7 +156,7 @@ def ProcessProductReview(idReviews):
    
 if __name__ == '__main__':
     
-    init_db()
+    InitDB()
    
     goods = FoodParser()
     

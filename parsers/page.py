@@ -10,6 +10,7 @@ from datetime import datetime
 from spiderStand import spider
 from spiderStand.spider import Spider
 
+
 class ReviewProductParser(object):
 
     def __init__(self):
@@ -92,7 +93,6 @@ class ReviewPersonParser(object):
             review.title = title[i]
     
             review.stars = 0.0
-          # print datePub[i]
             review.date_review = datetime.strptime( datePub[i], '%B %d, %Y')
                         
             res.append(review)
@@ -111,7 +111,7 @@ class GoodsParser(object):
         pass
     
     def getGoods(self, html):
-        descriptions = html.find_elements_by_class_name('productDescriptionWrapper')
+        descriptions = html.find_elements_by_css_selector('div.productDescriptionWrapper')
         description = ''
         
         for txt in descriptions:
@@ -136,13 +136,17 @@ class GoodsParser(object):
             salesRank = []
             
         bestSales = html.find_elements_by_class_name('zg_hrsr_ladder')
-        
+        if not bestSales == []:
+            salesRank = []
+            
         for line in bestSales:
             bufferSales = []
             line = line.find_elements_by_tag_name('a')
         
             for elem in line:
-                bufferSales.append(elem.text)
+                elem = elem.strip()
+                if not elem == '': 
+                    bufferSales.append(elem.text)
             
             salesRank.append(bufferSales)    
         
@@ -174,7 +178,8 @@ class GoodsParser(object):
 
         return goods
 
-s = Spider('', '')
-p =s.load(['http://www.amazon.com/DVI-Gear-HDMI-Cable-feet/dp/B0002L5R78'])
-par = GoodsParser()
-par.getGoods(p[0])
+'''
+gp = GoodsParser()
+l = Spider('','')
+gp.getGoods(l.load(['http://www.amazon.com/The-Indian-Slow-Cooker-Authentic/dp/1572841117'])[0])    
+'''
