@@ -6,19 +6,15 @@ Created on 23 нояб. 2014 г.
 '''
 import sys
 from pyes.query import QueryStringQuery, Search
-import unicodedata2
 from pyes.highlight import HighLighter
-import json
 
 sys.path.insert(0,'/home/priora/workspace/targetmaker/')
 
-from decision.shingle import Shingle
 from buildering.models import Goods
 from buildering.db import InitDB, GetAll, GetNum
 from parsers.text import TextProcess
-from graph.orient import CreateIfNotFindUser
+from graph.orient import GraphWrapper
 from twitter.request import TwitterSearcher    
-import re
 from pyes import ES
 
 class Decision(object):
@@ -54,16 +50,15 @@ class Decision(object):
             for t in tweet:
                 query = Search( QueryStringQuery(t), highlight=HighLighter(['<<<'],['>>>']))
                 query.add_highlight(t)
-                #print t
+                
                 res= es.search(query, "tweezon","tweets")
                 
                 if res:
                     targets += res[0]
                     print res[0]._meta.highlight
-                   # print re.findall(r'<<<.*>>>',json.dumps(res[0]))
             
 
 d = Decision()
-d.makeDecision(CreateIfNotFindUser('Kadiki_',TwitterSearcher()))     
+d.makeDecision(GraphWrapper().createIfNotFindUser('Kadiki_',TwitterSearcher()))     
         
         

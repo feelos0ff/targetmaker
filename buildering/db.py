@@ -101,4 +101,4 @@ def GetNum(objType,num):
     Session = sessionmaker(bind=engine)
     session = Session()    
     print num, objType
-    return session.query(objType).filter(objType.id  == num).all()[0]
+    return session.query(objType).get(objType.id  == num)
