@@ -7,7 +7,8 @@ Created on 23 нояб. 2014 г.
 import sys
 from pyes.query import QueryStringQuery, Search
 from pyes.highlight import HighLighter
-
+from rake.rake import Rake
+from parsers.text import TextProcess
 sys.path.insert(0,'/home/priora/workspace/targetmaker/')
 
 from buildering.models import Goods
@@ -26,6 +27,8 @@ class Decision(object):
         Constructor
         '''
         InitDB()
+        self.keyword = Rake("../rake/SmartStoplist.txt")
+        self.processor = TextProcess()
         '''
         es = ES('127.0.0.1:9200')
     
@@ -44,21 +47,27 @@ class Decision(object):
         targets = []
         es = ES('127.0.0.1:9200')
         for tweet in user.getTweets()[:]:
-            tweet = TextProcess().processing(tweet)
-            if not tweet:
+                   
+            keywordsList = [" AND ".self.processor.processing(word[0]) 
+                            for word in self.keyword.run(tweet) 
+                                if word[1] > 1]
+            if not keywordsList:
                 continue
-            for t in tweet:
-                query = Search( QueryStringQuery(t), highlight=HighLighter(['<<<'],['>>>']))
-                query.add_highlight(t)
-                
-                res= es.search(query, "tweezon","tweets")
-                
+            
+            query = " OR ".join(self.processor.processing(keywordsList))
+            res = es.search( QueryStringQuery(query), "tweezon","goods")[0]     
+            
+            try:
                 if res:
                     targets += res[0]
-                    print res[0]._meta.highlight
+                else:
+                    res = es.search( QueryStringQuery(tweet), "tweezon","goods")
+                    if res:
+                        targets += res[0]
+            except:
+                pass
             
-
+            
 d = Decision()
 d.makeDecision(GraphWrapper().createIfNotFindUser('Kadiki_',TwitterSearcher()))     
-        
-        
+
