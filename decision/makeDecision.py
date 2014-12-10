@@ -27,7 +27,6 @@ class Decision(object):
         Constructor
         '''
         InitDB()
-        self.keyword = Rake("../rake/SmartStoplist.txt")
         self.processor = TextProcess()
         '''
         es = ES('127.0.0.1:9200')
@@ -40,7 +39,7 @@ class Decision(object):
                     if key != '_sa_instance_state':
                         productFields[key]= value
                         
-                es.index(productFields,'tweezon','tweets')
+                es.index(productFields,'tweezon','goods')
     
         '''
     def makeDecision(self,user): 
