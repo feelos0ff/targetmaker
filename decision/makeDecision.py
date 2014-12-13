@@ -6,19 +6,16 @@ Created on 23 нояб. 2014 г.
 '''
 import sys
 from pyes.query import QueryStringQuery, Search
-import unicodedata2
 from pyes.highlight import HighLighter
-import json
-
+from rake.rake import Rake
+from parsers.text import TextProcess
 sys.path.insert(0,'/home/priora/workspace/targetmaker/')
 
-from decision.shingle import Shingle
 from buildering.models import Goods
 from buildering.db import InitDB, GetAll, GetNum
 from parsers.text import TextProcess
-from graph.orient import CreateIfNotFindUser
+from graph.orient import GraphWrapper
 from twitter.request import TwitterSearcher    
-import re
 from pyes import ES
 
 class Decision(object):
@@ -30,6 +27,7 @@ class Decision(object):
         Constructor
         '''
         InitDB()
+        self.processor = TextProcess()
         '''
         es = ES('127.0.0.1:9200')
     
@@ -41,29 +39,34 @@ class Decision(object):
                     if key != '_sa_instance_state':
                         productFields[key]= value
                         
-                es.index(productFields,'tweezon','tweets')
+                es.index(productFields,'tweezon','goods')
     
         '''
     def makeDecision(self,user): 
         targets = []
         es = ES('127.0.0.1:9200')
         for tweet in user.getTweets()[:]:
-            tweet = TextProcess().processing(tweet)
-            if not tweet:
+                   
+            keywordsList = [" AND ".self.processor.processing(word[0]) 
+                            for word in self.keyword.run(tweet) 
+                                if word[1] > 1]
+            if not keywordsList:
                 continue
-            for t in tweet:
-                query = Search( QueryStringQuery(t), highlight=HighLighter(['<<<'],['>>>']))
-                query.add_highlight(t)
-                #print t
-                res= es.search(query, "tweezon","tweets")
-                
+            
+            query = " OR ".join(self.processor.processing(keywordsList))
+            res = es.search( QueryStringQuery(query), "tweezon","goods")[0]     
+            
+            try:
                 if res:
                     targets += res[0]
-                    print res[0]._meta.highlight
-                   # print re.findall(r'<<<.*>>>',json.dumps(res[0]))
+                else:
+                    res = es.search( QueryStringQuery(tweet), "tweezon","goods")
+                    if res:
+                        targets += res[0]
+            except:
+                pass
             
-
+            
 d = Decision()
-d.makeDecision(CreateIfNotFindUser('Kadiki_',TwitterSearcher()))     
-        
-        
+d.makeDecision(GraphWrapper().createIfNotFindUser('Kadiki_',TwitterSearcher()))     
+
