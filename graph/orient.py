@@ -144,6 +144,3 @@ class GraphWrapper:
             for user in users:
                 self.addUserToGraph(user.twitterAccount,searcher)
     
-    
-       
-#ConvertFromSQLToGraph()   

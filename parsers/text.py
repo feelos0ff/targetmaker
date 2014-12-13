@@ -30,7 +30,7 @@ class TextProcess(object):
         text = nltk.tokenize.wordpunct_tokenize(text.lower())
         text = [word
                 for word in text 
-                    if (not word in stops) and word.isalpha()]
+                    if (not word in stops) and word.isalpha() and (word != "rt")]
         return text#' '.join(text)
         '''
         normalizing = (lambda w: wordnet.wordnet.morphy(w) if wordnet.wordnet.morphy(w) else stemmer.stem(w))
@@ -64,3 +64,10 @@ class TextProcess(object):
     
         return nltk.Text(text).vocab()
         '''
+    def normalizeForGraph(self,text):
+        stops = stopwords.words('english')
+        text = nltk.tokenize.wordpunct_tokenize(text.lower())
+        text = [word
+                for word in text 
+                    if (not word in stops) and word.isalpha()]
+        return ' '.join(text)
