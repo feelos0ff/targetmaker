@@ -9,8 +9,9 @@ from pyes.query import QueryStringQuery, Search
 from pyes.highlight import HighLighter
 from rake.rake import Rake
 from parsers.text import TextProcess
+import json
 sys.path.insert(0,'/home/priora/workspace/targetmaker/')
-
+from collections import defaultdict
 from buildering.models import Goods
 from buildering.db import InitDB, GetAll, GetNum
 from parsers.text import TextProcess
@@ -31,7 +32,27 @@ class Decision(object):
         self.keyword = Rake("../rake/SmartStoplist.txt")
      
         self.es = ES('127.0.0.1:9200')
+    
+        self.graph = defaultdict(list)
+
+    def depth(self, parent, category, product):
+        if not category:
+            if parent[product.name]:
+                return parent[product.name]
+            else:
+                return [product, 0]
         
+        for key, val in category.items():
+            if parent[key]:
+                self.depth(parent[key],val, product)
+            else:
+                parent[key] = self.depth(parent[key],val, product)
+                parent[key][1] += 1
+            
+            return [parent, 0]
+    
+    def addToGraph(self, product):
+        self.graph = self.depth( self.graph,json.loads(product.category),product)
        
     def makeDecision(self,user): 
         targets = []
