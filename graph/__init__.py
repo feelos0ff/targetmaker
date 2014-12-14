@@ -80,42 +80,6 @@ def InitGraph():
     except:
         pass
     
-    mapping = {u'name': {'index': 'analyzed',
-                          'store': 'yes',
-                          'type': u'string',
-                          "term_vector": "with_positions_offsets"},
-               u'brand':{'index': 'analyzed',
-                       'store': 'yes',
-                       'type': u'string',
-                       "term_vector": "with_positions_offsets"},
-               u'category':{'index': 'analyzed',
-                       'store': 'yes',
-                       'type': u'string',
-                       "term_vector": "with_positions_offsets"},
-               u'detail':{'index': 'analyzed',
-                       'store': 'yes',
-                       'type': u'string',
-                       "term_vector": "with_positions_offsets"},
-               u'price':{'index': 'analyzed',
-                       'store': 'yes',
-                       'type': u'string',
-                       "term_vector": "with_positions_offsets"},
-               u'description':{'index': 'analyzed',
-                       'store': 'yes',
-                       'type': u'string',
-                       "term_vector": "with_positions_offsets"},
-               u'url':{'index': 'analyzed',
-                       'store': 'yes',
-                       'type': u'string',
-                       "term_vector": "with_positions_offsets"}
-    }
-    
-    try:
-        es.indices.create_index("twitter")
-        es.indices.put_mapping("goods", {'properties': mapping}, "twitter")
-    except:
-        pass
-    
     g.add_proxy("categoriesLink", GraphCategoriesLink)
     g.add_proxy("categoryRoot",   GraphCategoryRoot)
     

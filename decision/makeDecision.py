@@ -28,9 +28,10 @@ class Decision(object):
         '''
         InitDB()
         self.processor = TextProcess()
-        '''
+        self.keyword = Rake("../rake/SmartStoplist.txt")
+     
         es = ES('127.0.0.1:9200')
-    
+        '''
         for goods in GetAll(Goods):
             for product in goods:
                 productFields = dict()
@@ -38,24 +39,25 @@ class Decision(object):
                 for key, value in product.__dict__.items():
                     if key != '_sa_instance_state':
                         productFields[key]= value
-                        
+                    
                 es.index(productFields,'tweezon','goods')
-    
         '''
+       
     def makeDecision(self,user): 
         targets = []
         es = ES('127.0.0.1:9200')
-        for tweet in user.getTweets()[:]:
-                   
-            keywordsList = [" AND ".self.processor.processing(word[0]) 
+        # переработать
+        for tweet in user.getTweets()[:]:  
+    
+            keywordsList = [(" ".join(self.processor.processing(word[0]))) 
                             for word in self.keyword.run(tweet) 
                                 if word[1] > 1]
             if not keywordsList:
                 continue
             
-            query = " OR ".join(self.processor.processing(keywordsList))
-            res = es.search( QueryStringQuery(query), "tweezon","goods")[0]     
-            
+            query = " ".join(keywordsList)
+            res = es.search( QueryStringQuery(query), "tweezon","goods")     
+            print query
             try:
                 if res:
                     targets += res[0]
@@ -65,7 +67,7 @@ class Decision(object):
                         targets += res[0]
             except:
                 pass
-            
+        print targets
             
 d = Decision()
 d.makeDecision(GraphWrapper().createIfNotFindUser('Kadiki_',TwitterSearcher()))     

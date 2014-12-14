@@ -8,9 +8,6 @@ import nltk
 from nltk.corpus import stopwords
 from nltk import wordnet 
 import re
-import unicodedata2
-
-
 class TextProcess(object):
     '''
     classdocs
@@ -18,9 +15,8 @@ class TextProcess(object):
     
     def __init__(self):
         self.pattern = re.compile(r"https?\S*")
-    
-    def normalizeForGraph(self, text):
-        return unicodedata2.normalize('NFD',unicode(text))[0:5000] 
+        #(r"""~^(?:(?:https?|ftp|telnet)://(?:[a-z0-9_-]{1,32}(?::[a-z0-9_-]{1,32})?@)?)?(?:(?:[a-z0-9-]{1,128}\.)+(?:ru|su|com|net|org|mil|edu|arpa|gov|biz|info|aero|inc|name|[a-z]{2})|(?!0)(?:(?!0[^.]|255)[0-9]{1,3}\.){3}(?!0|255)[0-9]{1,3})(?:/[a-z0-9.,_@%&?+=\~/-]*)?(?:#[^ '\"&]*)?$~i""")
+
     
     def processing(self,text, ngramm = 1, syns = False):
         
@@ -34,7 +30,7 @@ class TextProcess(object):
         text = nltk.tokenize.wordpunct_tokenize(text.lower())
         text = [word
                 for word in text 
-                    if (not word in stops) and word.isalpha()]
+                    if (not word in stops) and word.isalpha() and (word != "rt")]
         return text#' '.join(text)
         '''
         normalizing = (lambda w: wordnet.wordnet.morphy(w) if wordnet.wordnet.morphy(w) else stemmer.stem(w))
@@ -68,3 +64,10 @@ class TextProcess(object):
     
         return nltk.Text(text).vocab()
         '''
+    def normalizeForGraph(self,text):
+        stops = stopwords.words('english')
+        text = nltk.tokenize.wordpunct_tokenize(text.lower())
+        text = [word
+                for word in text 
+                    if (not word in stops) and word.isalpha()]
+        return ' '.join(text)
