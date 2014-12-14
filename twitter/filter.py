@@ -6,7 +6,6 @@ Created on 06 дек. 2014 г.
 '''
 
 import requests
-from rake.rake import Rake
 from parsers.text import TextProcess
 
 class TweeFilter(object):

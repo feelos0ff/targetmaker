@@ -15,13 +15,8 @@ from pyes import ES
 class GraphGoods(Node):
     element_type = 'goods'
     num = Integer()
-    detail = String(indexed=True)
-    name = String(indexed=True)
-    price = Float()
-    description = String(indexed=True)
-    brand = String(indexed=True)
-    url = String(indexed=True)
-      
+    idEl = String(indexed=True)
+    brand = String(indexed=True) 
   
 class GraphCategory(Node):
     element_type = 'category'

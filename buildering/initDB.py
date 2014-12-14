@@ -79,6 +79,11 @@ if __name__ == '__main__':
                                 'store': 'yes',
                                 'type': u'string',
                                 "term_vector": "with_positions_offsets"},
+                u'idInGraph': {'boost': 0.1,
+                                'index': 'analyzed',
+                                'store': 'yes',
+                                'type': u'string',
+                                "term_vector": "with_positions_offsets"},               
         }
     
     es.indices.put_mapping("goods", {'properties': mapping}, "tweezon")
