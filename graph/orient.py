@@ -135,12 +135,17 @@ class GraphWrapper:
         InitDB()
         
         searcher = TwitterSearcher()
-        '''
-        for goods in GetAll(Goods):
-            for product in goods:
-                self.addProductToGraph(product)
-        '''
+
         for users in GetAll(Persons):
             for user in users:
                 self.addUserToGraph(user.twitterAccount,searcher)
     
+        for goods in GetAll(Goods):
+            for product in goods:
+                productFields = dict()
+                for key, value in product.__dict__.items():
+                    if key != '_sa_instance_state':
+                        productFields[key]= value
+                        
+                self.es.index(productFields,'tweezon','goods')
+                

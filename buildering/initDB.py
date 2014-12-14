@@ -81,7 +81,7 @@ if __name__ == '__main__':
                                 "term_vector": "with_positions_offsets"},
         }
     
-    es.indices.put_mapping("tweets", {'properties': mapping}, "tweezon")
+    es.indices.put_mapping("goods", {'properties': mapping}, "tweezon")
     
     geo = open('../rsc/locations.csv')
     num = 0
