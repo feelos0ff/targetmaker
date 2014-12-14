@@ -49,16 +49,19 @@ class GraphWrapper:
             self.depth(category, val, product)
         
     def addProductToGraph(self,product):
+        productFields = dict()
+        
+        for key, value in product.__dict__.items():
+            if key != '_sa_instance_state':
+                productFields[key]= value
     
         rec = self.g.goods.create(
-                              num = product.id,        
-                              detail= self.norm(product.detail), 
-                              name = self.norm(product.name), 
-                              price = product.price, 
-                              description = self.norm(product.description),
-                              brand = self.norm(product.brand),
-                              url = product.url
+                              num = product.id,
+                              brand  = product.brand,        
+                              idEl = self.es.index(productFields,'tweezon','goods')
                             )
+        rec.idEl['idInGraph'] = rec.id;
+        rec.idEl.save();
         self.depth( self.rootNode, 
                json.loads(product.category), 
                rec)
@@ -136,16 +139,11 @@ class GraphWrapper:
         
         searcher = TwitterSearcher()
 
+        for goods in GetAll(Goods):
+            for product in goods:
+                self.addProductToGraph(product)
+
         for users in GetAll(Persons):
             for user in users:
                 self.addUserToGraph(user.twitterAccount,searcher)
-    
-        for goods in GetAll(Goods):
-            for product in goods:
-                productFields = dict()
-                for key, value in product.__dict__.items():
-                    if key != '_sa_instance_state':
-                        productFields[key]= value
-                        
-                self.es.index(productFields,'tweezon','goods')
                 

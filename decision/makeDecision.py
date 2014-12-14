@@ -56,7 +56,7 @@ class Decision(object):
                         targets += res[0]
             except:
                 pass
-        
+            print res
         print targets
         
 d = Decision()
