@@ -17,7 +17,8 @@ class GraphGoods(Node):
     num = Integer()
     idEl = String(indexed=True)
     brand = String(indexed=True) 
-  
+    name  = String(indexed=True)
+    
 class GraphCategory(Node):
     element_type = 'category'
 

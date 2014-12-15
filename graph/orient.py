@@ -54,14 +54,15 @@ class GraphWrapper:
         for key, value in product.__dict__.items():
             if key != '_sa_instance_state':
                 productFields[key]= value
-    
+        
         rec = self.g.goods.create(
                               num = product.id,
                               brand  = product.brand,        
-                              idEl = self.es.index(productFields,'tweezon','goods')
+                              name = product.name
                             )
-        rec.idEl['idInGraph'] = rec.id;
-        rec.idEl.save();
+        productFields['idInGraph'] = rec.eid
+        rec.idEl = self.es.index(productFields,'tweezon','goods',product.id, bulk=True)['_id']
+        rec.save()
         self.depth( self.rootNode, 
                json.loads(product.category), 
                rec)
@@ -86,7 +87,7 @@ class GraphWrapper:
                     return None
                 print e
                 
-            twitts = [self.es.index({'twitt' :stat.text , 'key' : userLogin},"twitter", "twitts")['_id']
+            twitts = [self.es.index({'twitt' :stat.text , 'key' : userLogin},"twitter", "twitts", bulk=True)['_id']
                         for stat in info if self.tweeFilter(stat)]
             
             if len(twitts)< 5:
@@ -138,12 +139,30 @@ class GraphWrapper:
         InitDB()
         
         searcher = TwitterSearcher()
-
+        i = 0
         for goods in GetAll(Goods):
             for product in goods:
-                self.addProductToGraph(product)
-
+                try:
+                    self.addProductToGraph(product)
+                except:
+                    pass
+            print i 
+            i += 100
+        i = 0
+        self.es.force_bulk()
         for users in GetAll(Persons):
+            if i < 1000:
+                i += 100
+                continue
             for user in users:
-                self.addUserToGraph(user.twitterAccount,searcher)
-                
+                try:
+                    self.addUserToGraph(user.twitterAccount,searcher)
+                except:
+                    pass
+            print i 
+            i += 100
+        self.es.force_bulk()
+            
+if __name__ == '__main__':
+    g = GraphWrapper() 
+    g.convertFromSQLToGraph()               

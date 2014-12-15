@@ -84,6 +84,7 @@ class Decision(object):
             except:
                 pass
 
-        
+        print self.getBestChoice()
+
 d = Decision()
 d.makeDecision(GraphWrapper().createIfNotFindUser('Kadiki_',TwitterSearcher()))     
