@@ -162,7 +162,10 @@ class GraphWrapper:
             print i 
             i += 100
         self.es.force_bulk()
-            
+
+        
+    
+    
 if __name__ == '__main__':
     g = GraphWrapper() 
     g.convertFromSQLToGraph()               

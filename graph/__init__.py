@@ -10,6 +10,7 @@ from bulbs.model import Node, Relationship
 from bulbs.property import Integer, String, Float,List
 from tweepy.models import User
 from pyes import ES
+import bulbs
 
 
 class GraphGoods(Node):
@@ -38,6 +39,7 @@ class TweeUser(Node):
     screen_name = String(indexed=True)
     data = List(indexed=True)
     location = String(indexed=True)
+    idEl = String(indexed=True)
 
     def getTweets(self):
         es = ES('127.0.0.1:9200')
