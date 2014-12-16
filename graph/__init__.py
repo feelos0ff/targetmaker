@@ -15,7 +15,6 @@ from pyes import ES
 class GraphGoods(Node):
     element_type = 'goods'
     num = Integer()
-    idEl = String(indexed=True)
     brand = String(indexed=True) 
     name  = String(indexed=True)
     

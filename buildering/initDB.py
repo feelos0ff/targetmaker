@@ -111,9 +111,9 @@ if __name__ == '__main__':
         city.name    = line[6]
         
         res = es.index({'country_code' : country.code, 'country_name' : country.name,
-                        'region_code' : region.code, 'region_name' : region.name, 'city_name':line[6]},"tweezon", "geo", num)
+                        'region_code' : region.code, 'region_name' : region.name, 'city_name':line[6]},"tweezon", "geo", num, bulk=True)
         
         print res
-  
+    es.force_bulk()
     es.indices.refresh()
     geo.close()
