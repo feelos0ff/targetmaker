@@ -164,6 +164,7 @@ class GraphWrapper:
             i += 100
         self.es.force_bulk()
         self.es.indices.refresh()   
+        
 if __name__ == '__main__':
     g = GraphWrapper() 
     g.convertFromSQLToGraph()               
