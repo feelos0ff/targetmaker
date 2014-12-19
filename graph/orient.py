@@ -61,8 +61,7 @@ class GraphWrapper:
                               name = product.name
                             )
         productFields['idInGraph'] = rec.eid
-        rec.idEl = self.es.index(productFields,'tweezon','goods',product.id, bulk=True)['_id']
-        rec.save()
+        self.es.index(productFields,'tweezon','goods',product.id, bulk=True)
         self.depth( self.rootNode, 
                json.loads(product.category), 
                rec)
@@ -87,7 +86,7 @@ class GraphWrapper:
                     return None
                 print e
                 
-            twitts = [self.es.index({'twitt' :stat.text , 'key' : userLogin},"twitter", "twitts", bulk=True)['_id']
+            twitts = [self.es.index({'twitt' :stat.text , 'key' : userLogin},"twitter", "twitts")['_id']
                         for stat in info if self.tweeFilter(stat)]
             
             if len(twitts)< 5:
@@ -144,12 +143,14 @@ class GraphWrapper:
             for product in goods:
                 try:
                     self.addProductToGraph(product)
-                except:
+                except Exception as e:
+                    print e
                     pass
             print i 
             i += 100
         i = 0
         self.es.force_bulk()
+        self.es.indices.refresh()
         for users in GetAll(Persons):
             if i < 1000:
                 i += 100
@@ -162,7 +163,8 @@ class GraphWrapper:
             print i 
             i += 100
         self.es.force_bulk()
-            
+        self.es.indices.refresh()   
+        
 if __name__ == '__main__':
     g = GraphWrapper() 
     g.convertFromSQLToGraph()               

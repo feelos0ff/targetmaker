@@ -28,12 +28,10 @@ class Decision(object):
         InitDB()
         self.processor = TextProcess()
         self.keyword = Rake("../rake/SmartStoplist.txt")
-     
         self.es = ES('127.0.0.1:9200')
-    
-        self.graph = defaultdict(list)
+        self.goods = defaultdict(list)
 
-    def depth(self, parent, category, product):
+    def depth(self, parent, category, product, k):
         if not category:
             if parent[product.name]:
                 return parent[product.name]
@@ -42,29 +40,26 @@ class Decision(object):
         
         for key, val in category.items():
             if parent[key]:
-                self.depth(parent[key],val, product)
+                self.depth(parent[key],val, product, k)
             else:
-                parent[key] = self.depth(parent[key],val, product)
-                parent[key][1] += 1
+                parent[key] = self.depth(parent[key],val, product, k)
+                parent[key][1] += k
             
-            return [parent, 0]
+        return [parent, 0]
     
-    def addToGraph(self, product):
-        self.graph = self.depth( self.graph,json.loads(product.category),product)
+    def addToGraph(self, product, k = 1):
+        self.goods = self.depth( self.goods,json.loads(product.category),product, k)
        
     def getBestChoice(self):
-        it = self.graph
+        it = self.goods
         while isinstance(it, dict) or isinstance(it, defaultdict):
             optKey = max(it.items(), key = lambda x : x[1][1])
             it = it[optKey]
         # вернули товар о котором чаще всего говорили(можно через граф откатиться на уровеь назад и взять рандом)
         return it
                 
-    def makeDecision(self,user): 
-
-        # переработать
+    def contextDecision(self,user):
         for tweet in user.getTweets()[:]:  
-    
             keywordsList = [(" ".join(self.processor.processing(word[0]))) 
                             for word in self.keyword.run(tweet) 
                                 if word[1] > 1]
@@ -83,8 +78,26 @@ class Decision(object):
                         self.addToGraph( res[0])
             except:
                 pass
+            
+        return self
 
-        print self.getBestChoice()
-
+    def makeDecision(self,user): 
+        for v in user.inV():
+            if not v.idEl:
+                v.idEl = self.contextDecision(v).getBestChoice()['_id']
+                v.idEl.save()
+                self.goods.clear()
+    
+        for v in user.inV():
+            self.addToGraph(v, 0.33)
+            
+        self.contextDecision(user)
+        product = self.getBestChoice()
+        
+        user.idEl = product['_id']
+        user.save()
+        
+        return product
+            
 d = Decision()
 d.makeDecision(GraphWrapper().createIfNotFindUser('Kadiki_',TwitterSearcher()))     
