@@ -7,6 +7,7 @@ Created on 06 дек. 2014 г.
 
 import requests
 from parsers.text import TextProcess
+import json
 
 class TweeFilter(object):
     '''
@@ -17,16 +18,18 @@ class TweeFilter(object):
         self.processor = TextProcess()
     
     def filter(self, tweet): 
-        query = {
-                    "query_string" : {
-                        "min_score": 0.5,
-                        "default_field" : ["brand","category"],
-                        "query" : " OR ".join(self.processor.processing(tweet))
+        query = {"min_score": 1,
+                 "query" : 
+                    {
+                        "query_string" : {
+                            "fields" : ["brand","category"],
+                            "query" : " ".join(self.processor.processing(tweet))
+                        }
                     }
-                }
-        response = requests.get("http://localhost:9200/twitter/goods/_search", params=query)
+                 }
+        response = requests.get("http://localhost:9200/tweezon/goods/_search", data=json.dumps(query))
         
-        if response["hits"]["total"] > 1:
+        if json.loads(response.text)["hits"]["total"] > 1:
             return True
 
         return False

@@ -14,6 +14,7 @@ from twitter.request import TwitterSearcher
 from twitter.filter import TweeFilter   
 from pyes import ES
 from parsers.text import TextProcess
+from bulbs.element import Edge
 
 
 class GraphWrapper:
@@ -28,7 +29,7 @@ class GraphWrapper:
     def depth(self,parent, tree, product):
         if tree == {}:
             k = unicodedata2.normalize('NFD',unicode(product.name )).strip()
-            self.g.categoriesLink.create(parent, product, {'label': k})
+            self.g.categoriesLink.create(parent, product, {'name': k})
             
         for key, val in tree.items():
             if key == '': 
@@ -39,13 +40,18 @@ class GraphWrapper:
             k = unicodedata2.normalize('NFD',unicode(key )).strip()
             category = ''
             
-            if not parent.outE() or not parent.outE(k):
+            try:      
+                for tmpE in self.g.categoriesLink.index.lookup(name = k):  
+                    if tmpE._outV == parent.eid:
+                        category = tmpE.outV() 
+                        break
+            except:
+                pass     
+            
+            if category == '':
                 category = self.g.category.create()  
-                self.g.categoriesLink.create(parent,category, {'label':k})
-    
-            else:
-                category = parent.outE(k).outV()             
-    
+                self.g.categoriesLink.create(parent,category, {'name':k})                
+                        
             self.depth(category, val, product)
         
     def addProductToGraph(self,product):
@@ -54,6 +60,12 @@ class GraphWrapper:
         for key, value in product.__dict__.items():
             if key != '_sa_instance_state':
                 productFields[key]= value
+        try:
+            rec = self.g.goods.index.lookup(num = product.id)
+            if rec:
+                return
+        except:
+            pass
         
         rec = self.g.goods.create(
                               num = product.id,
@@ -67,15 +79,18 @@ class GraphWrapper:
                rec)
             
     def createIfNotFindFollow(self, user, follower):
-        inGraph = user.inE(start=follower.eid)
+        inGraph = user.outE(start=follower.eid)
         
-        if (not inGraph) or (inGraph[0].outV() != user):
+        if (not inGraph) or (inGraph[0].inV() != user):
             return self.g.follow.create(user, follower)
     
         return inGraph[0]
         
     def createIfNotFindUser(self, userLogin, searcher):
-        inGraph = self.g.twitterUser.index.lookup(screen_name=userLogin)
+        try:
+            inGraph = self.g.twitterUser.index.lookup(screen_name=userLogin)
+        except:
+            inGraph = None
         user = None
         
         if not inGraph:
@@ -87,9 +102,9 @@ class GraphWrapper:
                 print e
                 
             twitts = [self.es.index({'twitt' :stat.text , 'key' : userLogin},"twitter", "twitts")['_id']
-                        for stat in info if self.tweeFilter(stat)]
+                        for stat in info if self.tweeFilter.filter(stat.text)]
             
-            if len(twitts)< 5:
+            if len(twitts)< 1:
                 return None
             
             try:
@@ -114,7 +129,8 @@ class GraphWrapper:
     def addUserToGraph(self, userLogin, searcher):
         try:
             user = self.createIfNotFindUser(userLogin, searcher)  
-        except:
+        except Exception as e:
+            print e
             return False
         
         if not user:
@@ -139,6 +155,7 @@ class GraphWrapper:
         
         searcher = TwitterSearcher()
         i = 0
+     
         for goods in GetAll(Goods):
             for product in goods:
                 try:
@@ -151,10 +168,8 @@ class GraphWrapper:
         i = 0
         self.es.force_bulk()
         self.es.indices.refresh()
+    
         for users in GetAll(Persons):
-            if i < 1000:
-                i += 100
-                continue
             for user in users:
                 try:
                     self.addUserToGraph(user.twitterAccount,searcher)
@@ -162,7 +177,6 @@ class GraphWrapper:
                     pass
             print i 
             i += 100
-        self.es.force_bulk()
         self.es.indices.refresh()   
         
 if __name__ == '__main__':
