@@ -5,7 +5,7 @@ Created on 23 нояб. 2014 г.
 @author: feelosoff
 '''
 import random
-
+'''
 class Shingle(object):
     
     def __init__(self):
@@ -89,3 +89,4 @@ class Shingle(object):
                 break
         
         return res
+'''

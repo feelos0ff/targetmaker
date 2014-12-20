@@ -8,7 +8,6 @@ import sys
 from pyes.query import QueryStringQuery
 from rake.rake import Rake
 import json
-from __builtin__ import max
 sys.path.insert(0,'/home/priora/workspace/targetmaker/')
 from collections import defaultdict
 from buildering.db import InitDB
@@ -99,4 +98,4 @@ class Decision(object):
         return product
             
 d = Decision()
-d.makeDecision(GraphWrapper().createIfNotFindUser('ncorres',TwitterSearcher()))     
+d.makeDecision(GraphWrapper().createIfNotFindUser('ncorres',TwitterSearcher())) 
