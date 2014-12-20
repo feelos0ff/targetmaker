@@ -22,9 +22,7 @@ class Decision(object):
     classdocs
     '''
     def __init__(self):
-        '''
-        Constructor
-        '''
+
         InitDB()
         self.processor = TextProcess()
         self.keyword = Rake("../rake/SmartStoplist.txt")
@@ -33,16 +31,16 @@ class Decision(object):
 
     def depth(self, parent, category, product, k):
         if not category:
-            if parent[product.name]:
+            if product.name in parent.keys():
                 return parent[product.name]
             else:
                 return [product, 0]
         
         for key, val in category.items():
             if key in parent.keys():
-                self.depth(parent[key],val, product, k)
+                self.depth(parent[key], val, product, k)
             else:
-                parent[key] = self.depth({},val, product, k)
+                parent[key] = self.depth({}, val, product, k)
                 parent[key][1] += k
             
         return [parent, 0]
