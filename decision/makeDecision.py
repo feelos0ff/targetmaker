@@ -31,11 +31,13 @@ class Decision(object):
     def depth(self, parent, category, product, k):
         if not category:
             if not product.name in parent.keys():
-                parent[product.name] = [product.id, 0]             
+                parent[product.name] = [product.id, k]
+            else:
+                parent[product.name][1] += k
         
         for key, val in category.items():
             if key in parent.keys():
-                self.depth(parent[key], val, product, k)
+                self.depth(parent[key][0], val, product, k)
             else:
                 parent[key] = self.depth({}, val, product, k)
             parent[key][1] += k
@@ -48,9 +50,11 @@ class Decision(object):
     def getBestChoice(self):
         it = self.goods
         while isinstance(it, dict) or isinstance(it, defaultdict):
-            optKey = max(it.items(), key = lambda x : x[1][1])
-            it = it[optKey]
+            optKey = max(it.items(), key = lambda x : x[1][1])[0]
+            it = it[optKey][0]
         # вернули товар о котором чаще всего говорили(можно через граф откатиться на уровеь назад и взять рандом)
+        print it, str(it), unicode(it)
+        
         return it
                 
     def contextDecision(self,user):
@@ -65,11 +69,11 @@ class Decision(object):
             res = self.es.search( QueryStringQuery(query), "tweezon","goods")     
             
             try:
-                if res:
+                if res._hits:
                     self.addToGraph( res[0])
                 else:
                     res = self.es.search( QueryStringQuery(tweet), "tweezon","goods")
-                    if res:
+                    if res._hits:
                         self.addToGraph( res[0])
             except Exception as e:
                 print e
@@ -80,8 +84,8 @@ class Decision(object):
     def makeDecision(self,user): 
         for v in user.inV():
             if not v.idEl:
-                v.idEl = self.contextDecision(v).getBestChoice()
-                v.idEl.save()
+                v.idEl = str( self.contextDecision(v).getBestChoice() )
+                v.save()
                 self.goods.clear()
     
         for v in user.inV():
