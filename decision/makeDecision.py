@@ -5,9 +5,10 @@ Created on 23 нояб. 2014 г.
 @author: feelosoff
 '''
 import sys
-from pyes.query import QueryStringQuery
+#from pyes.query import QueryStringQuery
 from rake.rake import Rake
 import json
+from twitter.filter import TweeFilter
 sys.path.insert(0,'/home/priora/workspace/targetmaker/')
 from collections import defaultdict
 from buildering.db import InitDB
@@ -15,6 +16,7 @@ from parsers.text import TextProcess
 from graph.orient import GraphWrapper
 from twitter.request import TwitterSearcher    
 from pyes import ES
+import nltk
 
 class Decision(object):
     '''
@@ -27,6 +29,7 @@ class Decision(object):
         self.keyword = Rake("../rake/SmartStoplist.txt")
         self.es = ES('127.0.0.1:9200')
         self.goods = {}
+        self.tweeFilter=TweeFilter()
 
     def depth(self, parent, category, product, k):
         if not category:
@@ -66,13 +69,17 @@ class Decision(object):
                 continue
             
             query = " ".join(keywordsList)
-            res = self.es.search( QueryStringQuery(query), "tweezon","goods")     
+            res = self.tweeFilter(query)     
             
             try:
                 if res._hits:
                     self.addToGraph( res[0])
                 else:
-                    res = self.es.search( QueryStringQuery(tweet), "tweezon","goods")
+                    text = nltk.tokenize.wordpunct_tokenize(tweet)
+                    text = [self.processor.processing(word) 
+                            for word in text]
+
+                    res = self.tweeFilter(" ".join(text))
                     if res._hits:
                         self.addToGraph( res[0])
             except Exception as e:

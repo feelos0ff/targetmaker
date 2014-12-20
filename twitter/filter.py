@@ -34,3 +34,20 @@ class TweeFilter(object):
 
         return False
     
+    def find(self, tweet):
+        query = {"min_score": 1,
+                 "query" : 
+                    {
+                        "query_string" : {
+                            "fields" : ["brand","category", "name"],
+                            "query" : " ".join(self.processor.processing(tweet))
+                        }
+                    }
+                 }
+        response = requests.get("http://localhost:9200/tweezon/goods/_search", data=json.dumps(query))
+        
+        if json.loads(response.text)["hits"]["total"] > 1:
+            return response[0]
+
+        return None
+    
