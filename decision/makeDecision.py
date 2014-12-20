@@ -31,8 +31,7 @@ class Decision(object):
     def depth(self, parent, category, product, k):
         if not category:
             if not product.name in parent.keys():
-                parent[product.name] = [product.id, 0] 
-            return parent[product.name]
+                parent[product.name] = [product.id, 0]             
         
         for key, val in category.items():
             if key in parent.keys():
@@ -44,13 +43,8 @@ class Decision(object):
         return [parent, 0]
     
     def addToGraph(self, product, k = 1):
-        for key, val in json.loads(product.category).items():
-            if key in self.goods.keys():
-                self.goods[key] = self.depth( self.goods[key],val,product, k)
-            else:
-                self.goods[key] = self.depth( {},val,product, k)
-            self.goods[key][1] += k
-        
+        self.goods = self.depth( self.goods,json.loads(product.category),product, k)[0]
+ 
     def getBestChoice(self):
         it = self.goods
         while isinstance(it, dict) or isinstance(it, defaultdict):
