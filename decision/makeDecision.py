@@ -30,23 +30,27 @@ class Decision(object):
 
     def depth(self, parent, category, product, k):
         if not category:
-            if product.name in parent.keys():
-                return parent[product.name]
-            else:
-                return [product, 0]
+            if not product.name in parent.keys():
+                parent[product.name] = [product.id, 0] 
+            return parent[product.name]
         
         for key, val in category.items():
             if key in parent.keys():
                 self.depth(parent[key], val, product, k)
             else:
                 parent[key] = self.depth({}, val, product, k)
-                parent[key][1] += k
+            parent[key][1] += k
             
         return [parent, 0]
     
     def addToGraph(self, product, k = 1):
-        self.goods = self.depth( self.goods,json.loads(product.category),product, k)
-       
+        for key, val in json.loads(product.category).items():
+            if key in self.goods.keys():
+                self.goods[key] = self.depth( self.goods[key],val,product, k)
+            else:
+                self.goods[key] = self.depth( {},val,product, k)
+            self.goods[key][1] += k
+        
     def getBestChoice(self):
         it = self.goods
         while isinstance(it, dict) or isinstance(it, defaultdict):
@@ -82,7 +86,7 @@ class Decision(object):
     def makeDecision(self,user): 
         for v in user.inV():
             if not v.idEl:
-                v.idEl = self.contextDecision(v).getBestChoice()['_id']
+                v.idEl = self.contextDecision(v).getBestChoice()
                 v.idEl.save()
                 self.goods.clear()
     
@@ -90,12 +94,11 @@ class Decision(object):
             self.addToGraph(v, 0.33)
             
         self.contextDecision(user)
-        product = self.getBestChoice()
         
-        user.idEl = product['_id']
+        user.idEl = self.getBestChoice()
         user.save()
         
-        return product
+        return user.idEl
             
 d = Decision()
 d.makeDecision(GraphWrapper().createIfNotFindUser('ncorres',TwitterSearcher())) 
