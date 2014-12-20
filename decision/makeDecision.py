@@ -29,7 +29,7 @@ class Decision(object):
         self.processor = TextProcess()
         self.keyword = Rake("../rake/SmartStoplist.txt")
         self.es = ES('127.0.0.1:9200')
-        self.goods = defaultdict(list)
+        self.goods = {}
 
     def depth(self, parent, category, product, k):
         if not category:
@@ -39,10 +39,10 @@ class Decision(object):
                 return [product, 0]
         
         for key, val in category.items():
-            if parent[key]:
+            if key in parent.keys():
                 self.depth(parent[key],val, product, k)
             else:
-                parent[key] = self.depth(parent[key],val, product, k)
+                parent[key] = self.depth({},val, product, k)
                 parent[key][1] += k
             
         return [parent, 0]
@@ -76,7 +76,8 @@ class Decision(object):
                     res = self.es.search( QueryStringQuery(tweet), "tweezon","goods")
                     if res:
                         self.addToGraph( res[0])
-            except:
+            except Exception as e:
+                print e
                 pass
             
         return self
@@ -100,4 +101,4 @@ class Decision(object):
         return product
             
 d = Decision()
-d.makeDecision(GraphWrapper().createIfNotFindUser('Kadiki_',TwitterSearcher()))     
+d.makeDecision(GraphWrapper().createIfNotFindUser('ncorres',TwitterSearcher()))     

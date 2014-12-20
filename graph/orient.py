@@ -14,7 +14,7 @@ from twitter.request import TwitterSearcher
 from twitter.filter import TweeFilter   
 from pyes import ES
 from parsers.text import TextProcess
-from bulbs.element import Edge
+
 
 
 class GraphWrapper:
@@ -79,12 +79,13 @@ class GraphWrapper:
                rec)
             
     def createIfNotFindFollow(self, user, follower):
-        inGraph = user.outE(start=follower.eid)
+
+        if user.inE():
+            for inGraph in user.inE():
+                if inGraph._inV == follower.eid:
+                    return inGraph
         
-        if (not inGraph) or (inGraph[0].inV() != user):
-            return self.g.follow.create(user, follower)
-    
-        return inGraph[0]
+        return self.g.follow.create(follower, user)
         
     def createIfNotFindUser(self, userLogin, searcher):
         try:
@@ -104,7 +105,7 @@ class GraphWrapper:
             twitts = [self.es.index({'twitt' :stat.text , 'key' : userLogin},"twitter", "twitts")['_id']
                         for stat in info if self.tweeFilter.filter(stat.text)]
             
-            if len(twitts)< 1:
+            if len(twitts)< 5:
                 return None
             
             try:
@@ -144,7 +145,8 @@ class GraphWrapper:
                 
                 if follower:
                     self.createIfNotFindFollow(user, follower)
-            except:
+            except Exception as e:
+                print e
                 pass
             
         return True
@@ -155,7 +157,7 @@ class GraphWrapper:
         
         searcher = TwitterSearcher()
         i = 0
-     
+   
         for goods in GetAll(Goods):
             for product in goods:
                 try:
