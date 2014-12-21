@@ -47,7 +47,7 @@ class TweeFilter(object):
         response = requests.get("http://localhost:9200/tweezon/goods/_search", data=json.dumps(query))
         
         if json.loads(response.text)["hits"]["total"] > 1:
-            return response[0]
+            return json.loads(response.text)["hits"]["hits"][0]["_source"]
 
         return None
     

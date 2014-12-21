@@ -5,18 +5,19 @@ Created on 23 нояб. 2014 г.
 @author: feelosoff
 '''
 import sys
+sys.path.insert(0,'/home/priora/workspace/targetmaker/')
+sys.path.insert(0,'/home/feelosoff/workspace/targetmaker/')
 #from pyes.query import QueryStringQuery
 from rake.rake import Rake
 import json
 from twitter.filter import TweeFilter
-sys.path.insert(0,'/home/priora/workspace/targetmaker/')
 from collections import defaultdict
 from buildering.db import InitDB
 from parsers.text import TextProcess
 from graph.orient import GraphWrapper
 from twitter.request import TwitterSearcher    
 from pyes import ES
-import nltk
+
 
 class Decision(object):
     '''
@@ -29,14 +30,14 @@ class Decision(object):
         self.keyword = Rake("../rake/SmartStoplist.txt")
         self.es = ES('127.0.0.1:9200')
         self.goods = {}
-        self.tweeFilter=TweeFilter()
+        self.tweeFilter=TweeFilter().find
 
     def depth(self, parent, category, product, k):
         if not category:
-            if not product.name in parent.keys():
-                parent[product.name] = [product.id, k]
+            if not product["name"] in parent.keys():
+                parent[product["name"]] = [product["id"], k]
             else:
-                parent[product.name][1] += k
+                parent[product["name"]][1] += k
         
         for key, val in category.items():
             if key in parent.keys():
@@ -48,7 +49,7 @@ class Decision(object):
         return [parent, 0]
     
     def addToGraph(self, product, k = 1):
-        self.goods = self.depth( self.goods,json.loads(product.category),product, k)[0]
+        self.goods = self.depth( self.goods,json.loads(product["category"]),product, k)[0]
  
     def getBestChoice(self):
         it = self.goods
@@ -68,23 +69,17 @@ class Decision(object):
             if not keywordsList:
                 continue
             
-            query = " ".join(keywordsList)
-            res = self.tweeFilter(query)     
-            
-            try:
-                if res._hits:
-                    self.addToGraph( res[0])
-                else:
-                    text = nltk.tokenize.wordpunct_tokenize(tweet)
-                    text = [self.processor.processing(word) 
-                            for word in text]
-
-                    res = self.tweeFilter(" ".join(text))
-                    if res._hits:
-                        self.addToGraph( res[0])
-            except Exception as e:
-                print e
-                pass
+            keywordsList += [" ".join(self.processor.processing(tweet))] 
+            for query in keywordsList:
+                res = self.tweeFilter(query)     
+                
+                try:
+                    if res:
+                        print query, res["name"], res["brand"],res["category"]
+                        self.addToGraph( res)
+                except Exception as e:
+                    print e
+                    pass
             
         return self
 
@@ -94,13 +89,12 @@ class Decision(object):
                 v.idEl = str( self.contextDecision(v).getBestChoice() )
                 v.save()
                 self.goods.clear()
-    
+        '''
         for v in user.inV():
             self.addToGraph(v, 0.33)
-            
-        self.contextDecision(user)
-        
-        user.idEl = self.getBestChoice()
+        '''   
+                
+        user.idEl = str(self.contextDecision(user).getBestChoice())
         user.save()
         
         return user.idEl
