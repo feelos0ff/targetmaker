@@ -102,4 +102,4 @@ class Decision(object):
         return user.idEl
             
 d = Decision()
-d.makeDecision(GraphWrapper().createIfNotFindUser('VynnieMcDaniels',TwitterSearcher())) 
+d.makeDecision(GraphWrapper().createIfNotFindUser('zkeefer',TwitterSearcher())) 
