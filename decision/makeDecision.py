@@ -40,6 +40,7 @@ class Decision(object):
                 parent[product["name"]][1] += k
         
         for key, val in category.items():
+            key = key.strip()
             if key in parent.keys():
                 self.depth(parent[key][0], val, product, k)
             else:
@@ -84,20 +85,21 @@ class Decision(object):
         return self
 
     def makeDecision(self,user): 
+        '''
         for v in user.inV():
             if not v.idEl:
                 v.idEl = str( self.contextDecision(v).getBestChoice() )
                 v.save()
                 self.goods.clear()
-        '''
+        
         for v in user.inV():
             self.addToGraph(v, 0.33)
         '''   
-                
-        user.idEl = str(self.contextDecision(user).getBestChoice())
-        user.save()
+        self.contextDecision(user).getBestChoice()
+       # user.idEl = str(self.contextDecision(user).getBestChoice())
+       # user.save()
         
         return user.idEl
             
 d = Decision()
-d.makeDecision(GraphWrapper().createIfNotFindUser('ncorres',TwitterSearcher())) 
+d.makeDecision(GraphWrapper().createIfNotFindUser('VynnieMcDaniels',TwitterSearcher())) 

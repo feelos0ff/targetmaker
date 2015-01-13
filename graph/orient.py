@@ -157,8 +157,12 @@ class GraphWrapper:
         
         searcher = TwitterSearcher()
         i = 0
-   
-        for goods in GetAll(Goods):
+        seq = []
+        f = open('../rsc/pr', 'r')
+        for l in f:
+            seq.append(int(l))
+        f.close()
+        for goods in GetAll(Goods, seq=seq):
             for product in goods:
                 try:
                     self.addProductToGraph(product)
@@ -170,8 +174,14 @@ class GraphWrapper:
         i = 0
         self.es.force_bulk()
         self.es.indices.refresh()
-    
-        for users in GetAll(Persons):
+        
+        seq = []
+        f = open('../rsc/per', 'r')
+        for l in f:
+            seq.append(int(l))
+        f.close()
+        
+        for users in GetAll(Persons, seq=seq):
             for user in users:
                 try:
                     self.addUserToGraph(user.twitterAccount,searcher)
